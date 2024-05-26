@@ -109,8 +109,11 @@ fsmstates[ntopp_v2.enums.GRAB]['npeppino'] = {
 			) then
 				state = ntopp_v2.enums.SWINGDING
 			end
-			if (state ~= ntopp_v2.enums.SWINGDING) then
+			if (state == ntopp_v2.enums.PILEDRIVER) then
+
+			elseif (state ~= ntopp_v2.enums.SWINGDING) then
 				player.pvars.cancelledgrab = true
+				player.pvars.ntoppv2_grabbed.setz = player.mo.height
 			end
 			fsm.ChangeState(player, state)
 		end
@@ -124,3 +127,18 @@ fsmstates[ntopp_v2.enums.GRAB]['npeppino'] = {
 		player.pvars.cancelledgrab = nil
 	end
 }
+
+addHook('MobjMoveCollide', function(mo, mobj)
+	if not NTOPP_Check(mo.player) then return end
+	local p = mo.player
+
+	if not (mobj.flags & MF_ENEMY) then return end
+	if p.fsm.state ~= ntopp_v2.enums.GRAB then return end
+	if not (p.pvars.ntoppv2_grabbed
+	and p.pvars.ntoppv2_grabbed.valid) then
+		p.pvars.ntoppv2_grabbed = P_SpawnMobj(mobj.x, mobj.y, mobj.z, MT_NTOPP_GRABBED)
+		p.pvars.ntoppv2_grabbed.target = mo
+		p.pvars.ntoppv2_grabbed.tracer = mobj
+		p.pvars.ntoppv2_grabbed.setz = mo.height
+	end
+end, MT_PLAYER)

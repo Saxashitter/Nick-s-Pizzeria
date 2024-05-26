@@ -17,3 +17,7 @@ hiresscale = 2
 contspeed = 2
 
 DSJUMP = DSNJUMP
+DSALTOW1 = sfx_owmyas
+DSALTOW2 = sfx_owmyas
+DSALTOW3 = sfx_owmyas
+DSALTOW4 = sfx_owmyas

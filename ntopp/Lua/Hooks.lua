@@ -177,7 +177,65 @@ end
 	local src = mo.ntoppv2_deathcollide.valid and mo.ntoppv2_deathcollide or nil
 	P_KillMobj(mo, src, src)
 	mo.ntoppv2_deathcollide = nil
-end, MT_GRABBEDMOBJ)]]
+end, MT_)]]
+addHook('MobjSpawn', function(mo)
+	mo.setx,mo.sety,mo.setz = 0,0,0
+	mo.killed = false
+end, MT_NTOPP_GRABBED)
+
+
+addHook('MobjThinker', function(mo)
+	if mo.target
+	and mo.target.valid 
+	and not mo.killed then
+		P_SetOrigin(mo,
+			mo.target.x+mo.setx-mo.target.momx,
+			mo.target.y+mo.sety-mo.target.momy,
+			mo.target.z+mo.setz-mo.target.momz
+		)
+		mo.momx = mo.target.momx
+		mo.momy = mo.target.momy
+		mo.momz = mo.target.momz
+	end
+	if mo.tracer then
+		mo.state = mo.tracer.state
+		mo.sprite = mo.tracer.sprite
+		mo.frame = mo.tracer.frame
+		mo.radius = mo.tracer.radius
+		mo.height = mo.tracer.height
+		if not mo.savedflags then
+			mo.savedflags = mo.tracer.flags
+			mo.savedflags2 = mo.tracer.flags2
+			mo.savedeflags = mo.tracer.eflags
+			mo.tracer.flags = MF_NOCLIPHEIGHT|MF_NOCLIP|MF_NOGRAVITY
+			mo.tracer.flags2 = MF2_DONTDRAW
+			mo.tracer.ngrab = true
+		end
+	end
+	if mo.killed then
+		if mo.z <= mo.floorz
+		or mo.z+mo.height >= mo.ceilingz then
+			P_KillMobj(mo)
+		end
+	end
+end, MT_NTOPP_GRABBED)
+
+addHook('MobjMoveBlocked', function(mo)
+	if mo.killed then
+		P_KillMobj(mo)
+	end
+end, MT_NTOPP_GRABBED)
+
+addHook('MobjDeath', function(mo)
+	mo.flags2 = $|MF2_DONTDRAW
+	if mo.tracer then
+		mo.tracer.flags = mo.savedflags
+		mo.tracer.flags2 = mo.savedflags2
+		mo.tracer.eflags = mo.savedeflags
+		P_SetOrigin(mo.tracer, mo.x, mo.y, mo.z)
+		P_KillMobj(mo.tracer, mo.target, mo.target)
+	end
+end, MT_NTOPP_GRABBED)
 
 addHook('MusicChange', function(old, new)
 	if not (consoleplayer and consoleplayer.valid) return end
@@ -271,15 +329,13 @@ addHook('ShouldDamage', function(target, inflictor, source, _, dmg)
 	
 	if not isPTSkin(player.mo.skin) then return end
 	if not (inflictor and inflictor.valid) then return end
+	if inflictor.ngrab then return false end
 
 	if player.fsm and player.fsm.state == ntopp_v2.enums.GRAB and target.skin ~= "ngustavo" then
 		return false
 	end
 	if player.fsm and player.fsm.state == ntopp_v2.enums.TAUNT and (dmg ~= DMG_FIRE or mapheaderinfo[gamemap].bonustype == 1) then
-		local mobj = inflictor
-
-		if (inflictor ~= source or mobj.flags & MF_MISSILE)
-		and mobj.type ~= MT_EGGMOBILE2_POGO then
+		if (inflictor.flags & MF_MISSILE) then
 			mobj.target = target
 			mobj.momx = -$
 			mobj.momy = -$
@@ -291,12 +347,6 @@ addHook('ShouldDamage', function(target, inflictor, source, _, dmg)
 		return false
 	end
 	if player.fsm and (player.fsm.state == ntopp_v2.enums.PARRY) then
-		return false
-	end
-
-	if inflictor.ntoppv2_stunned
-	or inflictor.ntoppv2_nodamagetime
-	or inflictor.ntoppv2_grabbed then
 		return false
 	end
 end)

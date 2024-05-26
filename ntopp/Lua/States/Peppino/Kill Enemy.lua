@@ -3,7 +3,13 @@ fsmstates[ntopp_v2.enums.GRAB_KILLENEMY]['npeppino'] = {
 	enter = function(self, player, state)
 		player.pvars.killtime = 10*2
 		player.pvars.killed = false
+		player.pvars.ntoppv2_grabbed.setx = 32*cos(player.mo.angle)
+		player.pvars.ntoppv2_grabbed.sety = 32*sin(player.mo.angle)
+		player.pvars.ntoppv2_grabbed.setz = player.mo.height/2
 		player.pvars.forcedstate = L_Choose(S_PEPPINO_FINISHINGBLOW1, S_PEPPINO_FINISHINGBLOW2, S_PEPPINO_FINISHINGBLOW3, S_PEPPINO_FINISHINGBLOW4, S_PEPPINO_FINISHINGBLOW5)
+		if player.cmd.buttons & BT_CUSTOM3 then
+			player.pvars.forcedstate = S_PEPPINO_FINISHINGBLOWUP
+		end
 	end,
 	playerthink = function(self, player)
 		if not (player.pvars.ntoppv2_grabbed and player.pvars.ntoppv2_grabbed.valid) then
@@ -20,21 +26,27 @@ fsmstates[ntopp_v2.enums.GRAB_KILLENEMY]['npeppino'] = {
 		player.drawangle = player.mo.angle
 		player.pflags = $|PF_FULLSTASIS
 		
-		if (player.pvars.killtime <= 10 and player.pvars.ntoppv2_grabbed) then
+		if (player.pvars.killtime <= 10 and not player.pvars.ntoppv2_grabbed.killed) then
 			L_ZLaunch(player.mo, 6*player.jumpfactor)
 			P_InstaThrust(player.mo, player.drawangle, -8*FU)
-			player.pvars.ntoppv2_grabbed.ntoppv2_deathcollide = player.mo
+	
+			if player.pvars.forcedstate ~= S_PEPPINO_FINISHINGBLOWUP then
+				player.pvars.ntoppv2_grabbed.momx = 32*cos(player.mo.angle)
+				player.pvars.ntoppv2_grabbed.momy = 32*sin(player.mo.angle)
+				player.pvars.ntoppv2_grabbed.momz = 8*(FU*P_MobjFlip(player.mo))
+			else
+				player.pvars.ntoppv2_grabbed.momx = 0*cos(player.mo.angle)
+				player.pvars.ntoppv2_grabbed.momy = 0*sin(player.mo.angle)
+				player.pvars.ntoppv2_grabbed.momz = 32*(FU*P_MobjFlip(player.mo))
+			end
+			player.pvars.ntoppv2_grabbed.killed = true
 			
-			player.pvars.ntoppv2_grabbed.momx = 32*cos(player.mo.angle)
-			player.pvars.ntoppv2_grabbed.momy = 32*sin(player.mo.angle)
-			player.pvars.ntoppv2_grabbed.momz = 8*(FU*P_MobjFlip(player.mo))
-			
-			player.pvars.ntoppv2_grabbed.ntoppv2_grabbed = nil
-			player.pvars.ntoppv2_grabbed = nil
-			S_StartSound(player.pvars.grabbedenemy, sfx_kenem)
+			player.pvars.ntoppv2_grabbed.flags = 0
+			S_StartSound(player.pvars.ntoppv2_grabbed, sfx_kenem)
 		end
 	end,
 	exit = function(self, player, state)
+		player.pvars.ntoppv2_grabbed = nil
 		player.pvars.killed = nil
 	end
 }

@@ -10,6 +10,10 @@ fsmstates[ntopp_v2.enums.PILEDRIVER]['npeppino'] = {
 		player.pvars.hitfloor = false
 		player.pvars.deb = false
 		player.pvars.soundtime = 12
+		player.pvars.ntoppv2_grabbed.setz = 0
+		if player.mo.skin == "nthe_noise" then
+			player.pvars.ntoppv2_grabbed.setz = player.mo.height
+		end
 		player.powers[pw_strong] = $|STR_SPRING
 		S_StartSound(player.mo, sfx_gpstar)
 	end,
@@ -41,6 +45,7 @@ fsmstates[ntopp_v2.enums.PILEDRIVER]['npeppino'] = {
 				S_StartSound(player.mo, sfx_grpo)
 				player.mo.state = S_PEPPINO_PILEDRIVERLAND
 				player.pvars.deb = true
+				player.pvars.ntoppv2_grabbed.setz = FU
 			end
 			if player.mo.state ~= S_PEPPINO_PILEDRIVERLAND then
 				fsm.ChangeState(player, ntopp_v2.enums.BASE)
@@ -56,9 +61,8 @@ fsmstates[ntopp_v2.enums.PILEDRIVER]['npeppino'] = {
 	exit = function(self,player)
 		if player.pvars and player.pvars.ntoppv2_grabbed and player.pvars.ntoppv2_grabbed.valid then
 			S_StartSound(player.mo, sfx_kenem)
-			player.pvars.ntoppv2_grabbed.ntoppv2_grabbed = nil
-			player.pvars.ntoppv2_grabbed.ntoppv2_deathcollide = player.mo
 			player.pvars.ntoppv2_grabbed.momz = 8*(FU*P_MobjFlip(player.pvars.ntoppv2_grabbed))
+			player.pvars.ntoppv2_grabbed.killed = true
 			player.pvars.ntoppv2_grabbed = nil
 		end
 		if not player.pvars.hassprung then

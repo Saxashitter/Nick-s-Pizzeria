@@ -3,6 +3,9 @@ fsmstates[ntopp_v2.enums.BASE_GRABBEDENEMY]['npeppino'] = {
 	enter = function(self, player)
 		player.mo.momx = 0
 		player.mo.momy = 0
+		player.pvars.ntoppv2_grabbed.setz = player.mo.height
+		player.pvars.ntoppv2_grabbed.setx = 0
+		player.pvars.ntoppv2_grabbed.sety = 0
 		if (player.pvars) then
 			player.pvars.forcedstate = S_PEPPINO_HAULINGIDLE
 			player.pvars.landanim = false

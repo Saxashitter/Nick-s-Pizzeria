@@ -12,7 +12,7 @@ let parser = new argparse.ArgumentParser({
 let defaults = {
     nameToOrder: {
         "S_SKIN": -105,
-        "Super": -105,
+        "S_SUPER": -105,
         "S_END": 5,
     }
 }
