@@ -1,44 +1,49 @@
 ntopp_v2.enums = {}
 local enumval = 1
 
-local function enum(str)
-	ntopp_v2.enums[str] = enumval
-	enumval = $+1
-	return ntopp_v2.enums[str]
+local function enum(...)
+	local enum_args = {...}
+	for i,str in ipairs(enum_args) do
+		ntopp_v2.enums[str] = enumval
+		enumval = $+1
+		return ntopp_v2.enums[str]
+	end
 end
 
-enum('BASE')
-enum('MACH1')
-enum('MACH2')
-enum('MACH3')
-enum('SKID')
-enum('DRIFT')
-enum('GRAB')
-enum('BASE_GRABBEDENEMY')
-enum('GRAB_KILLENEMY')
-enum('CROUCH')
-enum('ROLL')
-enum('DIVE')
-enum('BELLYSLIDE')
-enum('SUPERJUMPSTART')
-enum('SUPERJUMP')
-enum('SUPERJUMPCANCEL')
-enum('PAIN')
-enum('WALLCLIMB')
-enum('BODYSLAM')
-enum('UPPERCUT')
-enum('TAUNT')
-enum('GRABBED')
-enum('PARRY')
-enum('STUN')
-enum('PILEDRIVER')
-enum('BREAKDANCESTART')
-enum('BREAKDANCE')
-enum('BREAKDANCELAUNCH')
-enum('SUPERTAUNT')
-enum('SWINGDING')
-enum("FIREASS")
-enum("BOOSTER")
+enum {
+	"BASE";
+	"MACH1";
+	"MACH2";
+	"MACH3";
+	"SKID";
+	"DRIFT";
+	"GRAB";
+	"BASE_GRABBEDENEMY";
+	"GRAB_KILLENEMY";
+	"CROUCH";
+	"ROLL";
+	"DIVE";
+	"BELLYSLIDE";
+	"SUPERJUMPSTART";
+	"SUPERJUMP";
+	"SUPERJUMPCANCEL";
+	"PAIN";
+	"WALLCLIMB";
+	"BODYSLAM";
+	"UPPERCUT";
+	"TAUNT";
+	"GRABBED";
+	"PARRY";
+	"STUN";
+	"PILEDRIVER";
+	"BREAKDANCESTART";
+	"BREAKDANCE";
+	"BREAKDANCELAUNCH";
+	"SUPERTAUNT";
+	"SWINGDING";
+	"FIREASS";
+	"BOOSTER";
+}
 
 /*ntopp_v2.enums.BASE = 1
 ntopp_v2.enums.MACH1 = 2
