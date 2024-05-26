@@ -1,0 +1,8 @@
+{
+  "dependencies": {
+    "argparse": "^2.0.1",
+    "deasync": "^0.1.29",
+    "jimp": "^0.22.10",
+    "jszip": "^3.10.1"
+  }
+}

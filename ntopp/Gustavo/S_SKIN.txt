@@ -1,0 +1,18 @@
+name = ngustavo
+hudname = GUSTAVO
+realname = Gustavo
+flags = SF_HIRES|SF_NOJUMPSPIN|SF_STOMPDAMAGE|SF_NOSKID
+normalspeed = 18
+runspeed = 69420
+jumpfactor = 1.3
+accelstart = 60
+acceleration = 45
+thrustfactor = 12
+ability = CA_NONE
+ability2 = CA2_NONE
+prefcolor = White
+prefoppositecolor = Purple
+spinitem = MT_NULL
+hiresscale = 2
+
+DSJUMP = DSPJUMP

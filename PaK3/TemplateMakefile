@@ -1,0 +1,13 @@
+.PHONY: pak debug
+
+pak:
+	node PaK3/main.js data out.pk3
+
+pakrun:
+	node PaK3/main.js data out.pk3 -p ~/.srb2/lsdl2srb2
+
+debug:
+	node PaK3/main.js data out.pk3 -d
+
+debugrun:
+	node PaK3/main.js data out.pk3 -d -p ~/.srb2/lsdl2srb2

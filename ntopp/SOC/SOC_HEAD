@@ -1,0 +1,48 @@
+Level 102
+Levelname = Peppino's Pizza
+Act = 0
+Keywords = PPZ
+Music = _TITLE
+TypeOfLevel = Singleplayer,Co-op
+NextLevel = 1
+SkyNum = 1
+RecordAttack = false
+LevelSelect = 1
+SaveGame = true
+SkyboxScale = 64
+FlickyList = Bluebird,Chipmunk
+LevelSelect = 1
+NoVisitNeeded = true
+
+Level 101
+Levelname = Nick's test grounds
+Act = 0
+Keywords = NTG2
+Music = TUTORL
+TypeOfLevel = Singleplayer,Co-op,Competition,Race
+NextLevel = 1
+SkyNum = 1
+RecordAttack = true
+LevelSelect = 1
+SaveGame = true
+SkyboxScale = 64
+FlickyList = Bluebird,Chipmunk
+LevelSelect = 1
+NoVisitNeeded = true
+
+Level 103
+Levelname = Legacy Pizza
+Act = 0
+Keywords = LPZ
+Music = _TITLE
+TypeOfLevel = Singleplayer,Co-op
+NextLevel = 1
+SkyNum = 1
+RecordAttack = false
+LevelSelect = 1
+SaveGame = true
+SkyboxScale = 64
+FlickyList = Bluebird,Chipmunk
+LevelSelect = 1
+NoVisitNeeded = true
+NoZone = true

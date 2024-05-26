@@ -1,0 +1,92 @@
+Freeslot
+S_DEAD_ROSYLOL1
+S_DEAD_ROSYLOL2
+S_DEAD_ROSYLOL3
+S_DEAD_ROSYLOL4
+S_DEAD_ROSYLOL5
+S_DEAD_ROSYLOL6
+
+#LULZ:
+
+State S_DEAD_ROSYLOL1
+SpriteName = ROSY
+SpriteFrame = U
+Duration = 1
+Next = S_DEAD_ROSYLOL2
+Action = A_PlaySound
+Var1 = sfx_spkdth
+Var2 = 0
+
+State S_DEAD_ROSYLOL2
+SpriteName = ROSY
+SpriteFrame = U
+Duration = 3
+Next = S_DEAD_ROSYLOL3
+Action = A_ForceStop
+Var1 = 0
+Var2 = 0
+
+
+State S_DEAD_ROSYLOL3
+SpriteName = ROSY
+SpriteFrame = U
+Duration = 30
+Next = S_DEAD_ROSYLOL4
+Action = A_BubbleRise
+Var1 = 1
+Var2 = 20*FRACUNIT
+
+State S_DEAD_ROSYLOL4
+SpriteName = ROSY
+SpriteFrame = U
+Duration = 50
+Next = S_DEAD_ROSYLOL5
+Action = A_BubbleRise
+Var1 = 1
+Var2 = -50*FRACUNIT
+
+State S_DEAD_ROSYLOL5
+SpriteName = ROSY
+SpriteFrame = U
+Duration = 30
+Next = S_DEAD_ROSYLOL6
+Action = A_Fall
+Var1 = 30
+Var2 = 0
+
+State S_DEAD_ROSYLOL6
+SpriteName = ROSY
+SpriteFrame = U
+Duration = 50
+Next = S_NULL
+Action = A_ForceStop
+Var1 = 30
+Var2 = 0
+
+Object MT_ROSY
+MapThingNum = 2104
+SpawnState = S_ROSY_IDLE1
+SpawnHealth = 1
+SeeState = S_NULL
+SeeSound = sfx_None
+ReactionTime = 8
+AttackSound = sfx_None
+PainState = S_NULL
+PainChance = 0
+PainSound = sfx_None
+MeleeState = S_NULL
+MissileState = S_NULL
+DeathState = S_DEAD_ROSYLOL1
+XDeathState = S_NULL
+DeathSound = sfx_pop
+Speed = 3
+Radius = 16*FRACUNIT
+Height = 48*FRACUNIT
+DispOffset = 0
+Mass = 100
+Damage = 0
+ActiveSound = sfx_None
+Flags = MF_SCENERY|MF_SHOOTABLE|MF_SLIDEME|MF_ENEMY
+RaiseState = S_NULL
+
+

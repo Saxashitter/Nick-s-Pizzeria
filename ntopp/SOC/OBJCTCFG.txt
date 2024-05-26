@@ -1,0 +1,32 @@
+Character
+SkinName = npeppino
+DisplayName = Peppino
+TagTextColor = SKINCOLOR_WHITE
+TagOutlineColor = SKINCOLOR_BLACK
+OppositeColor = SKINCOLOR_ORANGE
+PlayerText = Peppino is the fastest out of the main cast. But in return, he's a very complex character.
+
+Custom 1 - Grab
+Custom 2 - Down Action
+Custom 3 - Up Action
+Toss Flag - Taunt
+Fire Normal (Non-competitive modes) - Breakdance
+
+Tip: This is the exact Peppino as the one in Pizza Tower. Yes, this means even some tech is possible!
+#
+Character
+SkinName = nthe_noise
+DisplayName = The_Noise
+TagTextColor = SKINCOLOR_GOLD
+TagOutlineColor = SKINCOLOR_TAN
+OppositeColor = SKINCOLOR_RED
+PlayerText = The Noise offers a more complex moveset. if you mastered Peppino, then you'll LOVE The Noise!
+
+Custom 1 - Grab
+Custom 2 - Down Action
+Custom 3 - Up Action
+Toss Flag - Taunt
+Fire Normal (Non-competitive modes) - Breakdance
+
+Tip: He's basically what happens if you give Peppino a energy drink.
+#

@@ -1,0 +1,29 @@
+name: Pak NTOPP
+
+on: [push]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v3
+    - name: Make dummy package lock
+      run: echo '{"name":"dummy","version":"1.0.0","lockfileVersion":3,"requires":true,"packages":{}}}' > package-lock.json
+    - name: Use Node.js 18.x
+      uses: actions/setup-node@v3
+      with:
+        node-version: '18.x'
+        cache: 'npm'
+    - name: Download PaK3`s dependencies
+      run: bash -c "cd PaK3; npm i"
+    - name: Run PaK3
+      run: node PaK3/main.js pk3/ build.pk3
+    # -$(date '+%d-%m-%Y')
+    - name: Upload NTOPP - Artifact
+      uses: actions/upload-artifact@v3.1.0
+      with:
+        name: 'ntopp-v2'
+        path: "build.pk3"
+        if-no-files-found: error

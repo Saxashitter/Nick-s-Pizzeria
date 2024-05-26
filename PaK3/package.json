@@ -1,0 +1,10 @@
+{
+	"author": "Unmatched Bracket",
+	"dependencies": {
+		"argparse": "^2.0.1",
+		"deasync": "^0.1.28",
+		"jimp": "^0.22.8",
+		"jszip": "^3.10.1",
+		"wad-js": "^1.0.0"
+	}
+}
