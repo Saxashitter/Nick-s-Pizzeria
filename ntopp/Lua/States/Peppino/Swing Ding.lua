@@ -1,5 +1,5 @@
 fsmstates[ntopp_v2.enums.SWINGDING]['npeppino'] = {
-	name = "Swing Ding",
+	name = "Skid",
 	enter = function(self, player)
 		player.pvars.forcedstate = S_PEPPINO_SWINGDING
 		player.pvars.drawangle = player.drawangle // used so we can force a angle during skidding :DD
@@ -7,10 +7,17 @@ fsmstates[ntopp_v2.enums.SWINGDING]['npeppino'] = {
 		player.pvars.pressed = nil
 		player.pvars.killed = nil
 		player.pvars.killtime = 10
-		player.pvars.ntoppv2_grabbed.setz = player.mo.height/2
 	end,
 	playerthink = function(self, player)
-		if not (player.pvars.ntoppv2_grabbed and player.pvars.ntoppv2_grabbed.valid) then
+		if not (player.mo) then return end
+		if not (player.pvars) or player.playerstate == PST_DEAD then
+			player.pvars = NTOPP_Init()
+			if (player.playerstate == PST_DEAD) then
+				return
+			end
+		end
+		
+		if not (player.pvars.grabbedenemy and player.pvars.grabbedenemy.valid) then
 			fsm.ChangeState(player, ntopp_v2.enums.BASE)
 			return
 		end
@@ -23,10 +30,21 @@ fsmstates[ntopp_v2.enums.SWINGDING]['npeppino'] = {
 			player.pvars.drawangle = $ + (ANG1*(player.speed/FU))
 		end
 		player.drawangle = player.pvars.drawangle
-		player.pvars.ntoppv2_grabbed.setx = 32*cos(player.drawangle)
-		player.pvars.ntoppv2_grabbed.sety = 32*sin(player.drawangle)
+		
+		if (player.pvars.grabbedenemy.type == MT_PLAYER) then
+			local x = player.mo.x + (32*cos(player.drawangle))
+			local y = player.mo.y + (32*sin(player.drawangle))
+			P_MoveOrigin(player.pvars.grabbedenemy, x, y, player.mo.z+player.mo.height)
+			player.pvars.grabbedenemy.momx = 0
+			player.pvars.grabbedenemy.momy = 0
+			player.pvars.grabbedenemy.momz = 0
+			player.pvars.grabbedenemy.player.pflags = $|PF_FULLSTASIS
+			player.pvars.grabbedenemy.player.powers[pw_carry] = CR_PLAYER
+			player.pvars.grabbedenemy.state = S_PLAY_PAIN
+		end
+		
 
-		if player.cmd.buttons & BT_CUSTOM1 and not (player.pvars.prevkeys and player.pvars.prevkeys & BT_CUSTOM1) then
+		if PT_FindPressed(player, "atk", player.cmd.buttons) and not (player.prevkeys and PT_FindPressed(player, "atk", player.prevkeys)) then
 			player.pvars.pressed = true
 		end
 
@@ -34,18 +52,21 @@ fsmstates[ntopp_v2.enums.SWINGDING]['npeppino'] = {
 			if (player.pvars.pressed) then
 				if not player.pvars.killed then
 					player.pvars.forcedstate = nil
-					player.drawangle = player.mo.angle
 					player.mo.state = S_PEPPINO_SWINGDINGEND
-					player.pvars.ntoppv2_grabbed.setx = FixedMul(player.mo.radius, cos(player.drawangle))
-					player.pvars.ntoppv2_grabbed.sety = FixedMul(player.mo.radius, sin(player.drawangle))
-					P_InstaThrust(player.pvars.ntoppv2_grabbed, player.drawangle, 30*FU)
-					L_ZLaunch(player.pvars.ntoppv2_grabbed, 8*FU)
 					L_ZLaunch(player.mo, 6*FU)
 					P_InstaThrust(player.mo, player.drawangle, -8*FU)
-					player.pvars.ntoppv2_grabbed.killed = true
-					
-					IncreaseSuperTauntCount(player)
-					player.pvars.ntoppv2_grabbed.flags = 0
+					if player.pvars.grabbedenemy.type ~= MT_PLAYER then
+						player.pvars.grabbedenemy.killed = true
+						P_AddPlayerScore(player, 100)
+						IncreaseSuperTauntCount(player)
+						player.pvars.grabbedenemy.flags = MF_NOCLIPHEIGHT|MF_NOGRAVITY
+					else
+						P_InstaThrust(player.pvars.grabbedenemy, player.mo.angle, 64*FU)
+						player.pvars.grabbedenemy.momz = (3*FU)*P_MobjFlip(player.pvars.grabbedenemy)
+						IncreaseSuperTauntCount(player)
+						player.pvars.grabbedenemy.player.powers[pw_carry] = 0
+						player.pvars.grabbedenemy.player.grabbed = false
+					end
 					player.pvars.killed = true
 				end
 				

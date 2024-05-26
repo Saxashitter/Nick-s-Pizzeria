@@ -7,6 +7,13 @@ fsmstates[ntopp_v2.enums.PAIN]['npeppino'] = {
 		ntopp_v2.WhiteFlash(player)
 	end,
 	think = function(self, player)
+		if not (player.mo) then return end
+		if not (player.pvars) or player.playerstate == PST_DEAD then
+			player.pvars = NTOPP_Init()
+			if (player.playerstate == PST_DEAD) then
+				return
+			end
+		end
 		player.pflags = $|PF_FULLSTASIS
 		if (not P_PlayerInPain(player) and player.playerstate == PST_LIVE)
 		then 

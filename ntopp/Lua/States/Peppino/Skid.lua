@@ -6,6 +6,14 @@ fsmstates[ntopp_v2.enums.SKID]['npeppino'] = {
 		player.pvars.drawangle = player.drawangle // used so we can force a angle during skidding :DD
 	end,
 	playerthink = function(self, player)
+		if not (player.mo) then return end
+		if not (player.pvars) or player.playerstate == PST_DEAD then
+			player.pvars = NTOPP_Init()
+			if (player.playerstate == PST_DEAD) then
+				return
+			end
+		end
+		
 		player.pflags = $|PF_JUMPSTASIS
 		
 		player.pvars.movespeed = max(0, $-(FU+(FU/2)))

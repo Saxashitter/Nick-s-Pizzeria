@@ -31,10 +31,14 @@ fsmstates[ntopp_v2.enums.GRAB]["ngustavo"] = {
 			pv.movespeed = PT_Approach($, (p.mo.scale * 4), FixedDiv(1, 10))
 		end
 		
+		if not (leveltime % 4) then
+			TGTLSAfterImage(player)
+		end
+		
 		p.powers[pw_strong] = $1|STR_ATTACK|STR_WALL|STR_ANIM
 		P_InstaThrust(p.mo, pv.thrustangle, pv.movespeed)
 		pv.grabtime = $-1
-		if (pv.grabtime < 0 and (not (p.cmd.buttons & BT_CUSTOM1) or pv.gustavohitwall))
+		if (pv.grabtime < 0 and (not (PT_FindPressed(p, "atk", p.cmd.buttons)) or pv.gustavohitwall))
 			--sprite_index = spr_lonegustavo_walk
 			fsm.ChangeState(player, ntopp_v2.enums.BASE)
 			if (p.speed != 0)

@@ -46,8 +46,8 @@ local function initializeVars(p)
 	}
 end
 
-freeslot("sfx_tvswtc")
-freeslot("sfx_tvswbc")
+sfxinfo[freeslot("sfx_tvswtc")].caption = "Technical Diffculties." //added this -rbf
+sfxinfo[freeslot("sfx_tvswbc")].caption = "TV Restarted"
 
 addHook("PlayerSpawn", function(p)
 	if p.ntoppimmortal == nil
@@ -128,6 +128,11 @@ addHook("PlayerThink", function(p)
 		
 		if (i.fakeplyr and i.fakeplyr.valid)
 			local fp = i.fakeplyr
+			fp.skin = pmo.skin
+	        fp.state = pmo.state
+			//so that the player won't lose sprites -rbf
+            fp.sprite = pmo.sprite
+	        fp.sprite2 = pmo.sprite2
 			fp.frame = pmo.frame
 		end
 		
@@ -206,6 +211,9 @@ addHook("ShouldDamage", function(pmo, _, _, _, dmg)
 	fp.target = pmo
 	fp.skin = pmo.skin
 	fp.state = pmo.state
+	fp.sprite = pmo.sprite
+	fp.sprite2 = pmo.sprite2
+	fp.frame = A
 	fp.flags = MF_NOCLIP|MF_NOCLIPHEIGHT
 	fp.flags2 = pmo.flags2 & ~MF2_DONTDRAW
 	fp.eflags = pmo.eflags

@@ -31,28 +31,34 @@ fsmstates[ntopp_v2.enums.WALLCLIMB]['nthe_noise'] = {
 		end
 		
 		player.pvars.forcedstate = S_PEPPINO_WALLCLIMB
+		//from effects but idfk -rbf
+	local fxfive = P_SpawnMobjFromMobj(player.mo, 0, 0, 0, MT_THOK)
+	fxfive.tics = 35
+    fxfive.state = S_NBONKEFFECT
+	fxfive.color = player.skincolor
+	//
 		S_StartSound(player.mo, sfx_nmccnc)
 	end,
 	playerthink = function(self, player)
-		if player.cmd.buttons & BT_CUSTOM2 then
+		if PT_FindPressed(player, "down", player.cmd.buttons) then
 			fsm.ChangeState(player, ntopp_v2.enums.DIVE)
 			return
 		end
-		if (player.cmd.buttons & BT_CUSTOM3)
-		and (player.cmd.buttons & BT_CUSTOM1 and not (player.pvars.prevkeys & BT_CUSTOM1)) then
+		if (PT_FindPressed(player, "up", player.cmd.buttons))
+		and (PT_FindPressed(player, "atk", player.cmd.buttons) and not (PT_FindPressed(player, "atk", player.prevkeys))) then
 			fsm.ChangeState(player, ntopp_v2.enums.UPPERCUT)
 			return
 		end
-		if player.cmd.buttons & BT_CUSTOM1
-		and not (player.pvars.prevkeys & BT_CUSTOM1) then
+		if PT_FindPressed(player, "atk", player.cmd.buttons)
+		and not (PT_FindPressed(player, "atk", player.prevkeys)) then
 			player.pvars.movespeed = ntopp_v2.machs[3]
 			fsm.ChangeState(player, ntopp_v2.enums.MACH2)
 			player.pvars.forcedstate = S_NOISE_SPIN
 			L_ZLaunch(player.mo, 4*FU)
 			return
 		end
-		if (player.cmd.buttons & BT_CUSTOM3)
-		and ((player.cmd.buttons & BT_JUMP) and not (player.pvars.prevkeys & BT_JUMP)) 
+		if (PT_FindPressed(player, "up", player.cmd.buttons))
+		and ((player.cmd.buttons & BT_JUMP) and not (player.prevkeys & BT_JUMP)) 
 		and player.pvars.cancrusher then
 			fsm.ChangeState(player, ntopp_v2.enums.BODYSLAM)
 			L_ZLaunch(player.mo, 40*FU)
@@ -66,7 +72,7 @@ fsmstates[ntopp_v2.enums.WALLCLIMB]['nthe_noise'] = {
 	end,
 	think = function(self, player)
 		if P_IsObjectOnGround(player.mo) then
-			if (player.cmd.buttons & BT_SPIN) then
+			if (PT_FindPressed(player, "run", player.cmd.buttons)) then
 				player.pvars.movespeed = ntopp_v2.machs[3]
 				fsm.ChangeState(player, ntopp_v2.enums.MACH3)
 				S_StartSound(player.mo, sfx_nmclnd)
@@ -87,16 +93,26 @@ fsmstates[ntopp_v2.enums.DIVE]['nthe_noise'] = {
 			player.normalspeed = player.pvars.movespeed
 		end
 		
+		
 		if player.pvars.cancrusher == nil then
 			player.pvars.cancrusher = true
 		end
 	end,
 	playerthink = function(self, player)
 		player.pvars.groundthing = P_IsObjectOnGround(player.mo)
+		
+		if not player.pvars.groundthing
+			player.pvars.forcedstate = S_NOISE_DRILLAIR
+		elseif player.pvars.forcedstate == S_NOISE_DRILLAIR
+		    player.pvars.forcedstate = S_NOISE_DRILLLAND
+		else
+			player.pvars.forcedstate = S_PEPPINO_DIVEBOMB
+		end
+		
 		player.pflags = $|PF_JUMPSTASIS
 		player.powers[pw_strong] = $1|STR_ATTACK|STR_SPIKE|STR_ANIM
-		if (player.cmd.buttons & BT_CUSTOM1)
-		and not (player.pvars.prevkeys & BT_CUSTOM1) then -- look nick you can do it in this state dummy.............
+		if (PT_FindPressed(player, "atk", player.cmd.buttons))
+		and not (PT_FindPressed(player, "atk", player.prevkeys)) then -- look nick you can do it in this state dummy.............
 			player.pvars.movespeed = ntopp_v2.machs[3]
 			fsm.ChangeState(player, ntopp_v2.enums.MACH2)
 			player.pvars.forcedstate = S_NOISE_SPIN
@@ -107,7 +123,7 @@ fsmstates[ntopp_v2.enums.DIVE]['nthe_noise'] = {
 		end
 	end,
 	think = function(self, player)
-		if not (player.cmd.buttons & BT_CUSTOM2) and P_IsObjectOnGround(player.mo) then
+		if not PT_FindPressed(player, "down", player.cmd.buttons) and P_IsObjectOnGround(player.mo) then
 			fsm.ChangeState(player, ntopp_v2.enums.WALLCLIMB)
 			L_ZLaunch(player.mo, 6*FU)
 			return
@@ -116,8 +132,8 @@ fsmstates[ntopp_v2.enums.DIVE]['nthe_noise'] = {
 			L_ZLaunch(player.mo, -23*FU)
 		end
 		if not P_IsObjectOnGround(player.mo)
-		and (player.cmd.buttons & BT_CUSTOM3)
-		and (player.cmd.buttons & BT_CUSTOM1 and not (player.pvars.prevkeys & BT_CUSTOM1)) then
+		and (PT_FindPressed(player, "up", player.cmd.buttons))
+		and (PT_FindPressed(player, "atk", player.cmd.buttons) and not (PT_FindPressed(player, "atk", player.prevkeys))) then
 			fsm.ChangeState(player, ntopp_v2.enums.UPPERCUT)
 			return
 		end

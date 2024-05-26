@@ -27,6 +27,13 @@ fsmstates[ntopp_v2.enums.SUPERJUMPSTART]['npeppino'] = {
 		end
 	end,
 	think = function(self, player)
+		if not (player.mo) then return end
+		if not (player.pvars) or player.playerstate == PST_DEAD then
+			player.pvars = NTOPP_Init()
+			if (player.playerstate == PST_DEAD) then
+				return
+			end
+		end
 		if player.mo.skin ~= "nthe_noise" and not S_SoundPlaying(player.mo, sfx_sjpre) then
 			if not S_SoundPlaying(player.mo, sfx_sjhol) then
 				S_StartSound(player.mo, sfx_sjhol)
@@ -57,7 +64,7 @@ fsmstates[ntopp_v2.enums.SUPERJUMPSTART]['npeppino'] = {
 			spingap = true
 		end
 		
-		if not (player.cmd.buttons & BT_CUSTOM3) and (P_IsObjectOnGround(player.mo) or player.ntoppv2_midairsj) and not spingap then
+		if not (PT_FindPressed(player, "up", player.cmd.buttons)) and (P_IsObjectOnGround(player.mo) or player.ntoppv2_midairsj) and not spingap then
 			fsm.ChangeState(player, ntopp_v2.enums.SUPERJUMP)
 		end
 	end,
@@ -134,8 +141,8 @@ fsmstates[ntopp_v2.enums.SUPERJUMP]['npeppino'] = {
 		player.pvars.drawangle = $ - ANG15*2
 		player.drawangle = player.pvars.drawangle
 		
-		local spinpressed = (player.cmd.buttons & BT_SPIN) and not (player.pvars.prevkeys and player.pvars.prevkeys & BT_SPIN)
-		local grabpressed = (player.cmd.buttons & BT_CUSTOM1) and not (player.pvars.prevkeys and player.pvars.prevkeys & BT_CUSTOM1)
+		local spinpressed = (player.cmd.buttons & BT_SPIN) and not (player.prevkeys and player.prevkeys & BT_SPIN)
+		local grabpressed = (PT_FindPressed(player, "atk", player.cmd.buttons)) and not (player.prevkeys and PT_FindPressed(player, "atk", player.prevkeys))
 		
 		if (spinpressed or grabpressed) then
 			local state = player.mo.skin == "nthe_noise" and ntopp_v2.enums.MACH2 or ntopp_v2.enums.SUPERJUMPCANCEL

@@ -24,17 +24,28 @@ end
 fsmstates[ntopp_v2.enums.BASE]['npeppino'] = {
 	name = "Standard",
 	enter = function(self, player, state)
-		player.pvars.forcedstate = nil
-		player.pvars.landanim = P_IsObjectOnGround(player.mo)
-		player.pvars.taunthold = 0
-		if (player.mo)
-		and shouldChange(player) then
-			player.mo.state = S_PLAY_STND // will default to what state it should be
+		if (player.pvars) then
+			player.pvars.forcedstate = nil
+			player.pvars.landanim = P_IsObjectOnGround(player.mo)
+			player.pvars.taunthold = 0
+			if (player.mo)
+			and shouldChange(player) then
+				player.mo.state = S_PLAY_STND // will default to what state it should be
+			end
 		end
 		player.ntoppv2_boogie = false
 	end,
 	playerthink = function(self, player)
-		if player.mo.skin == "nthe_noise" and player.cmd.buttons & BT_CUSTOM3 then
+		if not (player.mo) then return end
+		if not (player.pvars) or player.playerstate == PST_DEAD then
+			player.pvars = NTOPP_Init()
+			print(player.pvars)
+			if (player.playerstate == PST_DEAD) then
+				return
+			end
+		end
+		
+		if player.mo.skin == "nthe_noise" and PT_FindPressed(player, "up", player.cmd.buttons) then
 			player.pflags = $|PF_JUMPSTASIS
 		end
 		
@@ -79,12 +90,12 @@ fsmstates[ntopp_v2.enums.BASE]['npeppino'] = {
 		if (player.pflags & PF_SPINNING) then return end
 		if P_PlayerInPain(player) return end
 		
-		if (player.cmd.buttons & BT_TOSSFLAG) and not (player.pvars.prevkeys and player.pvars.prevkeys & BT_TOSSFLAG) then
+		if PT_FindPressed(player, "taunt", player.cmd.buttons) and not (player.prevkeys and PT_FindPressed(player, "taunt", player.prevkeys)) then
 			fsm.ChangeState(player, ntopp_v2.enums.TAUNT)
 			return
 		end
 		
-		if (player.cmd.buttons & BT_TOSSFLAG)then
+		if (PT_FindPressed(player, "taunt", player.cmd.buttons))then
 			if player.pvars.taunthold < 8 then
 				player.pvars.taunthold = $+1
 			elseif P_IsObjectOnGround(player.mo)
@@ -99,13 +110,13 @@ fsmstates[ntopp_v2.enums.BASE]['npeppino'] = {
 		if (player.pflags & PF_STASIS) then return end
 		if (player.exiting) then return end
 		
-		if (player.cmd.buttons & BT_CUSTOM3)
-		and (player.cmd.buttons & BT_CUSTOM1 and not (player.pvars.prevkeys & BT_CUSTOM1)) then
+		if (PT_FindPressed(player, "up", player.cmd.buttons))
+		and (PT_FindPressed(player, "atk", player.cmd.buttons) and not (PT_FindPressed(player, "atk", player.prevkeys))) then
 			fsm.ChangeState(player, ntopp_v2.enums.UPPERCUT)
 			return
 		end
 		
-		if not (player.gotflag) and ((player.cmd.buttons & BT_CUSTOM1 and not (player.pvars.prevkeys and player.pvars.prevkeys & BT_CUSTOM1))) then
+		if not (player.gotflag) and ((PT_FindPressed(player, "atk", player.cmd.buttons) and not (player.prevkeys and PT_FindPressed(player, "atk", player.prevkeys)))) then
 			fsm.ChangeState(player, ntopp_v2.enums.GRAB)
 			return
 		end
@@ -113,8 +124,8 @@ fsmstates[ntopp_v2.enums.BASE]['npeppino'] = {
 		if player.mo.skin == "nthe_noise" then
 			if (P_IsObjectOnGround(player.mo) and not (player.gotflag) or
 			not P_IsObjectOnGround(player.mo))
-			and (player.cmd.buttons & BT_CUSTOM3)
-			and ((player.cmd.buttons & BT_JUMP) and not (player.pvars.prevkeys & BT_JUMP)) then
+			and (PT_FindPressed(player, "up", player.cmd.buttons))
+			and ((player.cmd.buttons & BT_JUMP) and not (player.prevkeys & BT_JUMP)) then
 				if (P_IsObjectOnGround(player.mo)
 				or player.ntoppv2_midairsj) then
 					fsm.ChangeState(player, ntopp_v2.enums.SUPERJUMPSTART)
@@ -129,29 +140,29 @@ fsmstates[ntopp_v2.enums.BASE]['npeppino'] = {
 			end
 		end
 		
-		if (player.cmd.buttons & BT_SPIN and P_IsObjectOnGround(player.mo)) then
+		if (PT_FindPressed(player, "run", player.cmd.buttons) and P_IsObjectOnGround(player.mo)) then
 			fsm.ChangeState(player, ntopp_v2.enums.MACH1)
 			return
 		end
 		
-		if (player.cmd.buttons & BT_CUSTOM2) and P_IsObjectOnGround(player.mo) then
+		if PT_FindPressed(player, "down", player.cmd.buttons) and P_IsObjectOnGround(player.mo) then
 			fsm.ChangeState(player, ntopp_v2.enums.CROUCH)
 			return
 		end
 		
-		if not (player.gotflag) and ((player.cmd.buttons & BT_CUSTOM2) and not (player.pvars.prevkeys and player.pvars.prevkeys & BT_CUSTOM2)) and not P_IsObjectOnGround(player.mo)
+		if not (player.gotflag) and (PT_FindPressed(player, "down", player.cmd.buttons) and not (player.prevkeys and PT_FindPressed(player, "down", player.prevkeys))) and not P_IsObjectOnGround(player.mo)
 			fsm.ChangeState(player, ntopp_v2.enums.BODYSLAM)
 			return
 		end
 		
 		if NerfAbility() then return end
 		
-		if player.pvars.supertauntready and player.cmd.buttons & BT_CUSTOM3 and (player.cmd.buttons & BT_TOSSFLAG) and not (player.pvars.prevkeys and player.pvars.prevkeys & BT_TOSSFLAG) then
+		if player.pvars.supertauntready and PT_FindPressed(player, "up", player.cmd.buttons) and (PT_FindPressed(player, "taunt", player.cmd.buttons)) and not (player.prevkeys and PT_FindPressed(player, "taunt", player.prevkeys)) then
 			fsm.ChangeState(player, ntopp_v2.enums.SUPERTAUNT)
 			return
 		end
 		
-		--[[if not (NerfAbility()) and (player.cmd.buttons & BT_FIRENORMAL) and not (player.pvars.prevkeys and player.pvars.prevkeys & BT_FIRENORMAL) then
+		--[[if not (NerfAbility()) and (player.cmd.buttons & BT_FIRENORMAL) and not (player.prevkeys and player.prevkeys & BT_FIRENORMAL) then
 			if player.ntoppv2_asslauncher then
 				fsm.ChangeState(player, ntopp_v2.enums.BREAKDANCESTART)
 			else
@@ -169,62 +180,3 @@ fsmstates[ntopp_v2.enums.BASE]['npeppino'] = {
 		end
 	end
 }
-
-addHook('MobjMoveBlocked', function(mo, mobj, line)
-	local player = mo.player
-	if not NTOPP_Check(player) then return end
-	if not line and line.valid then return end
-	
-	if line.flags & ML_NOCLIMB then return end
-	
-	if player.fsm.state ~= ntopp_v2.enums.MACH1 
-	and player.fsm.state ~= ntopp_v2.enums.MACH2 
-	and player.fsm.state ~= ntopp_v2.enums.MACH3
-	and (player.fsm.state ~= ntopp_v2.enums.GRAB or player.mo.skin == "ngustavo")
-	and player.fsm.state ~= ntopp_v2.enums.LONGJUMP
-	and player.fsm.state ~= ntopp_v2.enums.BREAKDANCELAUNCH
-	then return end
-	
-	if P_IsObjectOnGround(mo) and not player.mo.standingslope then return end
-	if P_PlayerInPain(player) or player.playerstate == PST_DEAD then return end
-	
-	local wallfound = WallCheckHelper(player, line)
-	
-	if not wallfound then return end
-	
-	local angle = 0
-	if line and line.valid then
-		local linex,liney = P_ClosestPointOnLine(player.mo.x,player.mo.y,line)
-		angle = R_PointToAngle2(player.mo.x,player.mo.y,linex,liney)
-	end
-	local diff = player.mo.angle - angle
-	if diff <= ANG1*35 and diff >= -ANG1*35 then
-		fsm.ChangeState(player, ntopp_v2.enums.WALLCLIMB)
-		player.pvars.drawangle = angle
-	end
-end, MT_PLAYER)
-
-addHook('JumpSpecial', function(player)
-	if not NTOPP_Check(player) then return end
-	if not P_IsObjectOnGround(player.mo) then return end
-	if player.pflags & PF_JUMPDOWN then return end
-
-	local p = player
-	local me = p.mo //luigi budd is lazy
-	
-	if player.fsm.state == ntopp_v2.enums.MACH1 
-	or player.fsm.state == ntopp_v2.enums.MACH2
-	or player.fsm.state == ntopp_v2.enums.MACH3
-	or player.fsm.state == ntopp_v2.enums.GRAB then
-		local dist = -40
-		local d1 = P_SpawnMobjFromMobj(me, dist*cos(p.drawangle + ANGLE_45), dist*sin(p.drawangle + ANGLE_45), 0, MT_LINEPARTICLE)
-		local d2 = P_SpawnMobjFromMobj(me, dist*cos(p.drawangle - ANGLE_45), dist*sin(p.drawangle - ANGLE_45), 0, MT_LINEPARTICLE)
-		d1.angle = R_PointToAngle2(d1.x, d1.y, me.x+me.momx, me.y+me.momy) --- ANG5
-		d2.angle = R_PointToAngle2(d2.x, d2.y, me.x+me.momx, me.y+me.momy) --- ANG5
-		d1.state = S_PJUMPDUST
-		d2.state = S_PJUMPDUST
-	else
-		local dust = P_SpawnMobjFromMobj(me, 0,0,0, MT_LINEPARTICLE)
-		dust.state = S_PSTNDJUMPDUST
-	end
-end)

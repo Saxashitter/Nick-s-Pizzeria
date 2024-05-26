@@ -24,6 +24,11 @@ tv.states = {
 		Combo = {"COMB", 20, 2},
 		Heat = {"HEAT", 8, 2},
 		Fireass = {"FASS", 2, 1}
+	},
+	GUS_ = {
+		Idle = {"IDLE", 14, 2},
+		Panic = {"PANC", 8, 2},
+		Hurt = {"HURT", 8, 2}
 	}
 }
 
@@ -48,7 +53,8 @@ end
 
 tv.skinRefs = {
 	npeppino = "PEP_",
-	nthe_noise = "NOS_"
+	nthe_noise = "NOS_",
+	ngustavo = "GUS_"
 }
 
 local function PizzaTimeFunc(player)
@@ -140,7 +146,7 @@ end)
 
 addHook("ThinkFrame", do
 	for p in players.iterate do
-		if not NTOPP_Check(p) then continue end
+		if not NTOPP_Check(p) then return end
 		if not p.pvars.tv then p.pvars.tv = {
 			starttime = leveltime,
 			anim = "Idle"
@@ -152,7 +158,7 @@ addHook("ThinkFrame", do
 		local length = anim[2]*anim[3]
 		if anim[4] then length = anim[4] end
 	
-		if time > length and anim.onFinish then
+		if time > anim[2]*anim[3] and anim.onFinish then
 			anim.onFinish(p)
 		end
 		if p.pvars.tv.trans
@@ -167,16 +173,16 @@ local function draw_tv(v, p)
 	if not p.pvars.tv then return end
 
 	local sr = tv.skinRefs[p.mo.skin] or "PEP_"
+	//print(sr, p.mo.skin)
 	local anim = tv.states[sr][p.pvars.tv.anim]
 	local time = leveltime-p.pvars.tv.starttime
 
 	local frame = (time % (anim[2]*anim[3])) / anim[3]
 	local patch = v.cachePatch(sr..anim[1].."_"..tostring(frame))
 	
-	local x,y,s = 220*FU, -24*FU, FU/3
+	local x,y,s = 230*FU, -24*FU, FU/3
 
 	v.drawScaled(x,y,s, v.cachePatch("GLOB_BG"), V_SNAPTOTOP|V_SNAPTORIGHT)
-	v.drawScaled(x,y,s, v.cachePatch("GLOB_EMPTY"), V_SNAPTOTOP|V_SNAPTORIGHT)
 	v.drawScaled(x,y,s, patch, V_SNAPTOTOP|V_SNAPTORIGHT, v.getColormap(p.mo.skin, p.mo.color))
 
 	if p.pvars.tv.trans then

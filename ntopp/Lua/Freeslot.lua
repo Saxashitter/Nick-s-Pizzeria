@@ -44,7 +44,6 @@ freeslot("MT_NMEGIBS", "S_NMEGIBS", "SPR_EGIB")
 freeslot("MT_NOISE_OVERLAY")
 freeslot("MT_NTOPP_BOSSHP")
 
-//the mobj
 mobjinfo[MT_NMEGIBS] = {
 	spawnstate = S_NMEGIBS,
 	spawnhealth = 20,
@@ -123,6 +122,8 @@ mobjinfo[MT_NTOPP_BOSSHP] = {
 	flags = MF_SPECIAL
 }
 
+
+
 // PLAYER SHIT
 
 freeslot('sfx_pstep')
@@ -165,6 +166,8 @@ sfxinfo[freeslot("sfx_naspin")].caption = "Air Spin"
 sfxinfo[freeslot("sfx_ntrnd")].caption = "Tornado"
 sfxinfo[freeslot("sfx_gum1")].caption = "Mach 1"
 sfxinfo[freeslot("sfx_gum2")].caption = "Mach 3"
+sfxinfo[freeslot("sfx_gwj1")].caption = "Cling onto Wall"
+sfxinfo[freeslot("sfx_gwj2")].caption = "Wall Jump"
 
 freeslot('sfx_pskid')
 freeslot('sfx_drift')
@@ -175,6 +178,7 @@ freeslot('sfx_kenem')
 sfxinfo[sfx_kenem].caption = "Killed an enemy"
 freeslot('sfx_parry')
 freeslot('sfx_taunt')
+freeslot('sfx_staunt')
 
 freeslot('sfx_sjpre')
 freeslot('sfx_sjhol')
@@ -190,9 +194,15 @@ freeslot('sfx_phalo')
 freeslot('sfx_grpo')
 freeslot('sfx_mabmp')
 
+freeslot('sfx_owmyas')
 freeslot('sfx_pain1')
 freeslot('sfx_pain2')
+freeslot('sfx_npain1')
+freeslot('sfx_npain2')
+freeslot('sfx_npain3')
+freeslot('sfx_npain4')
 freeslot('sfx_eyaow')
+freeslot('sfx_dwaha')
 
 freeslot('sfx_upcut')
 freeslot('sfx_upcu2')
@@ -234,6 +244,7 @@ freeslot('SPR2_BSLD')
 
 freeslot('SPR2_DVBM')
 freeslot('SPR2_DVBE')
+freeslot('SPR2_DVBL')
 freeslot('SPR2_UPCE')
 
 freeslot('SPR2_WJEN')
@@ -268,8 +279,6 @@ freeslot('SPR2_STA4')
 freeslot('SPR2_PANC')
 freeslot('SPR2_SWDN')
 freeslot('SPR2_SWDE')
-
-freeslot('SPR2_UGRA')
 
 freeslot("S_PEPPINO_WATERSLIDE")
 
@@ -356,6 +365,7 @@ for i = 1,5 do
 	freeslot('S_PEPPINO_FINISHINGBLOW'..i)
 end
 	freeslot('S_PEPPINO_FINISHINGBLOWUP')
+	freeslot('SPR2_UGRA')
 
 freeslot('S_PEPPINO_BELLYSLIDE')
 
@@ -389,6 +399,8 @@ freeslot('S_NOISE_SPIN')
 freeslot('S_NOISE_CRUSHER')
 freeslot('S_NOISE_CRUSHEREND')
 
+freeslot('S_GUSTAVO_WALLJUMP')
+
 freeslot("S_EXPLOSIONEFFECT","SPR_EPLO","S_MACH4RING","SPR_M4RI")
 
 sfxinfo[sfx_pstep].caption = "Step"
@@ -401,11 +413,21 @@ sfxinfo[sfx_drift].caption = "Drift"
 sfxinfo[sfx_pgrab].caption = "Grab"
 sfxinfo[sfx_pain1].caption = "Painful yelp"
 sfxinfo[sfx_pain2].caption = "Painful yelp"
+sfxinfo[sfx_npain1].caption = "Painful woag"
+sfxinfo[sfx_npain2].caption = "Painful woag"
+sfxinfo[sfx_npain3].caption = "Painful woag"
+sfxinfo[sfx_npain4].caption = "Painful woag"
+sfxinfo[sfx_owmyas].caption = "Got hurt"
 sfxinfo[sfx_parry].caption = "Pow!"
 sfxinfo[sfx_phalo].caption = "HA!"
 sfxinfo[sfx_eyaow].caption = "EYAAAAOAOAOAOAOAOW!"
+sfxinfo[sfx_dwaha].caption = "DWAAAAAAHAAAAAAAAA!"
 sfxinfo[sfx_breda].caption = "Er-Er-Ere!"
 sfxinfo[sfx_brdam].caption = "Breakdance Music"
+sfxinfo[sfx_taunt].caption = "Taunt!"
+sfxinfo[sfx_staunt].caption = "Super taunt!"
+sfxinfo[sfx_strea].caption = "Super taunt ready!"
+sfxinfo[sfx_mabmp].caption = "Bump"
 
 sfxinfo[freeslot("sfx_mmlswt")].caption = "Light switch"
 sfxinfo[freeslot("sfx_mmjsc")].caption = "Jumpscare"
@@ -678,7 +700,6 @@ states[S_PEPPINO_PARRY2] = {SPR_PLAY, SPR2_PAR2, 1, nil, 0, 0, S_PEPPINO_PARRY2}
 states[S_PEPPINO_UPSTUN] = {SPR_PLAY, SPR2_SJLA|FF_ANIMATE|A, 8*2, nil, 20, 2, S_PLAY_STND}
 states[S_PEPPINO_MACH3STUN] = {SPR_PLAY, SPR2_M3HW|FF_ANIMATE|A, 12*2, nil, 11, 2, S_PLAY_STND}
 states[S_PEPPINO_MACH2STUN] = {SPR_PLAY, SPR2_WLSP|FF_ANIMATE|A, 7*2, nil, 6, 2, S_PLAY_STND}
-
 states[S_PEPPINO_PILEDRIVER] = {SPR_PLAY, SPR2_PIDR, 2, nil, 0, 0, S_PEPPINO_PILEDRIVER}
 states[S_PEPPINO_PILEDRIVERLAND] = {SPR_PLAY, SPR2_PIDL|FF_SPR2ENDSTATE, 2, nil, S_PLAY_STND, 0, S_PEPPINO_PILEDRIVERLAND}
 
@@ -771,6 +792,25 @@ states[S_NOISE_CRUSHEREND] = {
 	nextstate = S_NOISE_CRUSHEREND
 }
 
+freeslot("S_NOISE_DRILLAIR", "S_NOISE_DRILLLAND")
+
+states[S_NOISE_DRILLAIR] = {
+	sprite = SPR_PLAY,
+	frame = SPR2_DVBE|FF_ANIMATE|A,
+	tics = -1,
+	var1 = 1,
+	var2 = 2,
+	nextstate = S_NOISE_DRILLAIR
+}
+
+states[S_NOISE_DRILLLAND] = {
+	sprite = SPR_PLAY,
+	frame = SPR2_DVBL|FF_ANIMATE|A,
+	tics = -1,
+	var1 = 1,
+	var2 = 4,
+	nextstate = S_NOISE_DRILLLAND
+}
 
 freeslot("S_PEPPINO_LEVELCOMPLETE")
 
@@ -779,4 +819,13 @@ states[S_PEPPINO_LEVELCOMPLETE] = {
 	frame = SPR2_TAL7,
 	tics = 2,
 	nextstate = S_PEPPINO_LEVELCOMPLETE
+}
+
+states[S_GUSTAVO_WALLJUMP] = {
+	sprite = SPR_PLAY,
+	frame = SPR2_SWIM|FF_ANIMATE,
+	tics = -1,
+	nextstate = S_GUSTAVO_WALLJUMP,
+	var1 = 63,
+	var2 = 4
 }

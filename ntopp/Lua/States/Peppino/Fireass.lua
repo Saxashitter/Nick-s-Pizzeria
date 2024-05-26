@@ -17,11 +17,23 @@ fsmstates[ntopp_v2.enums.FIREASS]['npeppino'] = {
 		player.pvars.forcedstate = S_PEPPINO_FIREASS
 		player.pvars.fireasstime = 5
 		if not player.pvars.fascreamdelay
-			S_StartSound(player.mo, sfx_eyaow)
+	if player.mo.skin == "nthe_noise" //added this, i forgot to add it last time lol -rbf
+	S_StartSound(player.mo, sfx_dwaha)
+	else
+	S_StartSound(player.mo, sfx_eyaow)
+	end
 			player.pvars.fascreamdelay = 3*TICRATE
 		end
 	end,
 	playerthink = function(self, p)
+		if not (p.mo) then return end
+		if not (p.pvars) or p.playerstate == PST_DEAD then
+			p.pvars = NTOPP_Init()
+			if (p.playerstate == PST_DEAD) then
+				return
+			end
+		end
+		
 		p.pflags = $1|PF_JUMPSTASIS
 		
 		local pv = p.pvars

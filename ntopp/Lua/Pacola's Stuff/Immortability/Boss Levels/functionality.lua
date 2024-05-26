@@ -37,7 +37,13 @@ addHook("MobjDamage", function(pmo, inf, src, _, dmg)
 		return true
 	end
 	fsm.ChangeState(p, ntopp_v2.enums.PAIN)
-	S_StartSound(pmo, L_Choose(sfx_pain1, sfx_pain2))
+ //i think pacola hates me lol
+ S_StartSound(pmo, sfx_owmyas)
+ 	if pmo.skin == "nthe_noise"
+		S_StartSound(pmo, L_Choose(sfx_npain1, sfx_npain2, sfx_npain3, sfx_npain4))
+		else
+		S_StartSound(pmo, L_Choose(sfx_pain1, sfx_pain2))
+		end
 end, MT_PLAYER)
 
 addHook("MobjDamage", function(mo, inf, src)

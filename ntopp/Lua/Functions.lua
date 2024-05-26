@@ -295,55 +295,21 @@ rawset(_G, "IncreaseSuperTauntCount", function(player)
 	end
 end)
 
-local function isPlayerInWall(p, l)
-	local sector = (l.backsector 
-		and p.mo.subsector.sector ~= l.backsector)
-	and l.backsector or l.frontsector
-	local cheight = sector.ceilingheight
-	local fheight = sector.floorheight
-
-	if sector.f_slope then
-		fheight = P_GetZAt(sector.f_slope, p.mo.x, p.mo.y)
-	end
-	if sector.c_slope then
-		cheight = P_GetZAt(sector.c_slope, p.mo.x, p.mo.y)
-	end
-	
-	if p.mo.eflags & MFE_VERTICALFLIP then
-		cheight = sector.floorheight
-		fheight = sector.ceilingheight
-		
-		if sector.c_slope then
-			fheight = P_GetZAt(sector.c_slope, p.mo.x, p.mo.y)
-		end
-		if sector.f_slope then
-			cheight = P_GetZAt(sector.f_slope, p.mo.x, p.mo.yt)
-		end
-	end
-
-	if p.mo.z+p.mo.height/2 < fheight then
-		return true
-	end
-
-	for _,sector in pairs({sector, p.mo.subsector.sector}) do
-		if not sector then continue end
-		for wall in p.mo.subsector.sector.ffloors() do
-			if (p.mo.z+p.mo.height/2 < wall.topheight)
-			and (p.mo.z+p.mo.height/2 > wall.bottomheight)
-			and(wall.flags & FF_EXISTS)
-			and(wall.flags & FF_BLOCKPLAYER) then //Don't want the player to cling to water. That would be stupid
-				return true
-			end
-		end
-	end
-end
-
 rawset(_G, "WallCheckHelper", function(player, l)
 	if not (player and player.valid and player.mo and player.mo.valid) then return end
 	local atwall = 0
 	local climbing = false
 
-	if (l and l.valid and isPlayerInWall(player, l)) then
+	if player.pvars.mobjblocked then
+		if player.mo.z < player.pvars.mobjblocked.z+player.pvars.mobjblocked.height and player.mo.z+player.mo.height > player.pvars.mobjblocked.z then
+			return true
+		else
+			player.pvars.mobjblocked = nil
+			return false
+		end
+	end
+
+	if (l and l.valid) then
 		player.pvars.savedline = l
 	elseif not player.pvars.savedline then
 		return false
@@ -360,9 +326,52 @@ rawset(_G, "WallCheckHelper", function(player, l)
 		h = player.mo.height
 	}
 
-	climbing = isPlayerInWall(player, player.pvars.savedline)
+	local sector = (player.pvars.savedline.backsector 
+		and player.mo.subsector.sector ~= player.pvars.savedline.backsector)
+	and player.pvars.savedline.backsector or player.pvars.savedline.frontsector
+	local cheight = sector.ceilingheight
+	local fheight = sector.floorheight
+	
+	if sector.f_slope then
+		fheight = P_GetZAt(sector.f_slope, player.mo.x, player.mo.y)
+	end
+	if sector.c_slope then
+		cheight = P_GetZAt(sector.c_slope, player.mo.x, player.mo.y)
+	end
+	
+	if player.mo.eflags & MFE_VERTICALFLIP then
+		cheight = sector.floorheight
+		fheight = sector.ceilingheight
+		
+		if sector.c_slope then
+			fheight = P_GetZAt(sector.c_slope, player.mo.x, player.mo.y)
+		end
+		if sector.f_slope then
+			cheight = P_GetZAt(sector.f_slope, player.mo.x, player.mo.yt)
+		end
+	end
+
+	climbing = (player.mo.z < fheight)
+	if player.mo.eflags & MFE_VERTICALFLIP then
+		climbing = (player.mo.z+player.mo.height > fheight)
+	end
+	if fheight == cheight then
+		climbing = true
+	end
 	if player.pvars.savedline.backsector == nil then
 		climbing = true
+	end
+	for _,sector in pairs({player.pvars.savedline.frontsector, player.pvars.savedline.backsector}) do
+		if not sector then continue end
+		for wall in sector.ffloors() do
+			if (player.mo.z < wall.topheight) 
+			and (player.mo.height+player.mo.z > wall.bottomheight)
+			and(wall.flags & FF_EXISTS)
+			and(wall.flags & FF_BLOCKPLAYER) then //Don't want the player to cling to water. That would be stupid
+				climbing = true
+				break
+			end
+		end
 	end
 	if not climbing then
 		player.pvars.savedline = nil
@@ -422,9 +431,7 @@ rawset(_G, "NTOPP_Init", function()
 	
 	return t
 end)
-rawset(_G, "NTOPP_IsValid_1", function(p)
-	return (p and p.valid and p.mo and p.mo.valid and p.playerstate ~= PST_DEAD and isPTSkin(p.mo.skin))
-end)
+
 rawset(_G, "NTOPP_Check", function(p)
 	return (p and p.valid and p.mo and p.mo.valid and isPTSkin(p.mo.skin) and p.pvars and p.fsm)
 end)

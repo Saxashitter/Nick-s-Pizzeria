@@ -134,6 +134,8 @@ addHook('MobjMoveCollide', function(mo, mobj)
 
 	if not (mobj.flags & MF_ENEMY) then return end
 	if p.fsm.state ~= ntopp_v2.enums.GRAB then return end
+	if mobj.z > mo.z+mo.height then return end
+	if mo.z > mobj.z+mobj.height then return end
 	if not (p.pvars.ntoppv2_grabbed
 	and p.pvars.ntoppv2_grabbed.valid) then
 		p.pvars.ntoppv2_grabbed = P_SpawnMobj(mobj.x, mobj.y, mobj.z, MT_NTOPP_GRABBED)

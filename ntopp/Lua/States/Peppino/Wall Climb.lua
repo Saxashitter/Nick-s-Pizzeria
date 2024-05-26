@@ -24,6 +24,13 @@ fsmstates[ntopp_v2.enums.WALLCLIMB]['npeppino'] = {
 		if state == ntopp_v2.enums.GRAB and not NerfAbility(player) then player.pvars.movespeed = 8*FU end
 	end,
 	playerthink = function(self, player)
+		if not (player.mo) then return end
+		if not (player.pvars) or player.playerstate == PST_DEAD then
+			player.pvars = NTOPP_Init()
+			if (player.playerstate == PST_DEAD) then
+				return
+			end
+		end
 		player.pflags = $|PF_STASIS
 		local atwall = WallCheckHelper(player)
 		if not atwall then
@@ -50,7 +57,7 @@ fsmstates[ntopp_v2.enums.WALLCLIMB]['npeppino'] = {
 		L_ZLaunch(player.mo, player.pvars.movespeed/2)
 		P_MovePlayer(player)
 		
-		if (player.cmd.buttons & BT_JUMP and not (player.pvars.prevkeys and player.pvars.prevkeys & BT_JUMP)) then
+		if (player.cmd.buttons & BT_JUMP and not (player.prevkeys and player.prevkeys & BT_JUMP)) then
 			L_ZLaunch(player.mo, 8*player.jumpfactor)
 			player.pflags = $|PF_JUMPED|PF_STARTJUMP
 			

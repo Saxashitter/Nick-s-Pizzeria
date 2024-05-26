@@ -52,7 +52,7 @@ end)
 -- pacola
 -- i am doing noise's cool afterimages now
 
-freeslot("SPR_NCAI", "S_NTOPP_TORNADOAI", "S_NTOPP_MCANCELAI")
+freeslot("SPR_NCAI", "S_NTOPP_TORNADOAI", "S_NTOPP_MCANCELAI", "S_NTOPP_LANDTORNADOAI", "S_NTOPP_AIRTORNADOAI")
 
 states[S_NTOPP_TORNADOAI] = {
 	sprite = SPR_NCAI,
@@ -72,11 +72,29 @@ states[S_NTOPP_MCANCELAI] = {
 	var2 = 2
 }
 
+states[S_NTOPP_AIRTORNADOAI] = {
+	sprite = SPR_NCAI,
+	frame = T|FF_ANIMATE,
+	tics = -1,
+	nextstate = S_NULL,
+	var1 = 2,
+	var2 = 2
+}
+
+states[S_NTOPP_LANDTORNADOAI] = {
+	sprite = SPR_NCAI,
+	frame = O|FF_ANIMATE,
+	tics = -1,
+	nextstate = S_NULL,
+	var1 = 4,
+	var2 = 2
+}
+
 rawset(_G, "NTOPP_NoiseAI", function(mo, type)
 	type = $ or 1
 	
 	local g = P_SpawnMobj(mo.x, mo.y, mo.z, MT_THOK)
-	local state = (type == 1 and S_NTOPP_MCANCELAI) or S_NTOPP_TORNADOAI
+	local state = (type == 1 and S_NTOPP_MCANCELAI) or (type == 2 and S_NTOPP_AIRTORNADOAI) or (type == 3 and S_NTOPP_LANDTORNADOAI) or S_NTOPP_TORNADOAI
 	g.state = state
 	local fone = (mo.frame & FF_FRAMEMASK)+(states[state].frame & FF_FRAMEMASK)
 	local ftwo = (states[state].frame & FF_FRAMEMASK)+states[state].var1

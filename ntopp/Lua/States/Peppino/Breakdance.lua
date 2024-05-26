@@ -30,7 +30,7 @@ fsmstates[ntopp_v2.enums.BREAKDANCE]['npeppino'] = {
 			player.pvars.time = TICRATE-TICRATE/3
 		end
 	
-		if not (player.cmd.buttons & BT_TOSSFLAG)
+		if not (PT_FindPressed(player, "taunt", player.cmd.buttons))
 		or not P_IsObjectOnGround(player.mo) then
 			fsm.ChangeState(player, ntopp_v2.enums.BASE)
 			return

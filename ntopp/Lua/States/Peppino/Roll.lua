@@ -34,7 +34,7 @@ fsmstates[ntopp_v2.enums.ROLL]['npeppino'] = {
 			spingap = true
 		end
 		
-		if not (player.cmd.buttons & BT_CUSTOM2) and P_IsObjectOnGround(player.mo) and not (player.pvars.slidetime) and not spingap then
+		if not (PT_FindPressed(player, "down", player.cmd.buttons)) and P_IsObjectOnGround(player.mo) and not (player.pvars.slidetime) and not spingap then
 			fsm.ChangeState(player, GetMachSpeedEnum(player.pvars.movespeed))
 			return
 		end

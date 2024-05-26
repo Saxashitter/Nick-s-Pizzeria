@@ -25,7 +25,7 @@ fsmstates[ntopp_v2.enums.MACH1]['npeppino'] = {
 			end
 		end
 		
-		if player.mo.skin == "nthe_noise" and player.cmd.buttons & BT_CUSTOM3 then
+		if player.mo.skin == "nthe_noise" and PT_FindPressed(player, "up", player.cmd.buttons) then
 			player.pflags = $|PF_JUMPSTASIS
 		end
 		
@@ -53,20 +53,20 @@ fsmstates[ntopp_v2.enums.MACH1]['npeppino'] = {
 		P_InstaThrust(player.mo, player.drawangle, FixedMul(player.pvars.movespeed, player.mo.scale))
 		P_MovePlayer(player)
 		
-		if (not (player.cmd.buttons & BT_SPIN) and P_IsObjectOnGround(player.mo)) then
+		if (not (PT_FindPressed(player, "run", player.cmd.buttons)) and P_IsObjectOnGround(player.mo)) then
 			fsm.ChangeState(player, ntopp_v2.enums.BASE)
 			return
 		end
 		
-		if (player.cmd.buttons & BT_CUSTOM2) and not P_IsObjectOnGround(player.mo) then
+		if PT_FindPressed(player, "down", player.cmd.buttons) and not P_IsObjectOnGround(player.mo) then
 			fsm.ChangeState(player, ntopp_v2.enums.DIVE)
 		end
 		
 		if player.mo.skin == "nthe_noise" then
 			if (P_IsObjectOnGround(player.mo) and not (player.gotflag) or
 			not P_IsObjectOnGround(player.mo))
-			and (player.cmd.buttons & BT_CUSTOM3)
-			and ((player.cmd.buttons & BT_JUMP) and not (player.pvars.prevkeys & BT_JUMP)) then
+			and (PT_FindPressed(player, "up", player.cmd.buttons))
+			and ((player.cmd.buttons & BT_JUMP) and not (player.prevkeys & BT_JUMP)) then
 				if (P_IsObjectOnGround(player.mo)
 				or player.ntoppv2_midairsj) then
 					fsm.ChangeState(player, ntopp_v2.enums.SUPERJUMPSTART)
@@ -81,8 +81,8 @@ fsmstates[ntopp_v2.enums.MACH1]['npeppino'] = {
 			end
 		end
 		
-		if not (player.gotflag) and ((player.cmd.buttons & BT_CUSTOM1 and not (player.pvars.prevkeys and player.pvars.prevkeys & BT_CUSTOM1))) then
-			if (player.cmd.buttons & BT_CUSTOM3) then
+		if not (player.gotflag) and ((PT_FindPressed(player, "atk", player.cmd.buttons) and not (player.prevkeys and PT_FindPressed(player, "atk", player.prevkeys)))) then
+			if (PT_FindPressed(player, "up", player.cmd.buttons)) then
 				fsm.ChangeState(player, ntopp_v2.enums.UPPERCUT)
 				return
 			end
@@ -90,7 +90,7 @@ fsmstates[ntopp_v2.enums.MACH1]['npeppino'] = {
 			return
 		end
 		
-		if (player.cmd.buttons & BT_CUSTOM2 and P_IsObjectOnGround(player.mo)) then
+		if (PT_FindPressed(player, "down", player.cmd.buttons) and P_IsObjectOnGround(player.mo)) then
 			fsm.ChangeState(player, ntopp_v2.enums.ROLL)
 		end
 		
@@ -100,12 +100,13 @@ fsmstates[ntopp_v2.enums.MACH1]['npeppino'] = {
 		
 		if NerfAbility() then return end
 		
-		if player.pvars.supertauntready and player.cmd.buttons & BT_CUSTOM3 and (player.cmd.buttons & BT_TOSSFLAG) and not (player.pvars.prevkeys and player.pvars.prevkeys & BT_TOSSFLAG) then
+		if player.pvars.supertauntready and PT_FindPressed(player, "up", player.cmd.buttons)
+		and (PT_FindPressed(player, "taunt", player.cmd.buttons)) and not (player.prevkeys and PT_FindPressed(player, "taunt", player.prevkeys)) then
 			fsm.ChangeState(player, ntopp_v2.enums.SUPERTAUNT)
 			return
 		end
 		
-		if (player.cmd.buttons & BT_TOSSFLAG) and not (player.pvars.prevkeys and player.pvars.prevkeys & BT_TOSSFLAG) then
+		if (PT_FindPressed(player, "taunt", player.cmd.buttons)) and not (player.prevkeys and PT_FindPressed(player, "taunt", player.prevkeys)) then
 			fsm.ChangeState(player, ntopp_v2.enums.TAUNT)
 			return
 		end

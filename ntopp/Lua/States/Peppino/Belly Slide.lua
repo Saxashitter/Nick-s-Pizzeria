@@ -9,6 +9,13 @@ fsmstates[ntopp_v2.enums.BELLYSLIDE]['npeppino'] = {
 		player.pvars.movespeed = ntopp_v2.machs[3]+(3*FU)
 	end,
 	playerthink = function(self, player)
+		if not (player.mo) then return end
+		if not (player.pvars) or player.playerstate == PST_DEAD then
+			player.pvars = NTOPP_Init()
+			if (player.playerstate == PST_DEAD) then
+				return
+			end
+		end
 		player.pflags = $|PF_FULLSTASIS|PF_SPINNING
 
 		if (player.pvars.drawangle) then
@@ -31,7 +38,7 @@ fsmstates[ntopp_v2.enums.BELLYSLIDE]['npeppino'] = {
 			return
 		end
 		
-		if not (player.cmd.buttons & BT_CUSTOM2) and P_IsObjectOnGround(player.mo) and not (player.pvars.slidetime) then
+		if not (PT_FindPressed(player, "down", player.cmd.buttons)) and P_IsObjectOnGround(player.mo) and not (player.pvars.slidetime) then
 			fsm.ChangeState(player, GetMachSpeedEnum(player.pvars.movespeed))
 		end
 	end,

@@ -20,11 +20,12 @@ dofile('Libs/PacolaAnim.lua')
 dofile("noisecolors.lua") -- this has stuff for noise's skin color, needs to be loaded BEFORE Hooks.lua
 
 dofile('Freeslot.lua')
+dofile('Key Handler.lua')
 dofile('Afterimages.lua')
 dofile('White Flash.lua')
 dofile('Enums.lua')
 dofile('TV.lua')
-dofile('Options.lua')
+dofile('Options Menu.lua')
 dofile('CVars.lua')
 dofile('FSM.lua')
 dofile('HUD.lua')
@@ -69,6 +70,10 @@ end
 local gp = "States/Gustavo/"
 dofile(gp+"Base.lua")
 dofile(gp+"Spin (Grab).lua")
+dofile(gp+"Body Slam.lua")
+dofile(gp+"Crouch.lua")
+dofile(gp+"Double Jump.lua")
+dofile(gp+"Wall Jump.lua")
 
 dofile("Pacola's Stuff/Immortability/Normal Levels/functionality.lua")
 dofile("Pacola's Stuff/Immortability/Normal Levels/hud.lua")

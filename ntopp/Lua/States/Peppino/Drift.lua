@@ -23,6 +23,14 @@ fsmstates[ntopp_v2.enums.DRIFT]['npeppino'] = {
 		player.pvars.drawangle = player.drawangle // used so we can force a angle during skidding :DD
 	end,
 	playerthink = function(self, player)
+		if not (player.mo) then return end
+		if not (player.pvars) or player.playerstate == PST_DEAD then
+			player.pvars = NTOPP_Init()
+			if (player.playerstate == PST_DEAD) then
+				return
+			end
+		end
+		
 		player.pflags = $|PF_JUMPSTASIS
 		
 		player.pvars.movespeed = max(2*FU, $-player.pvars.driftspeed)
@@ -128,45 +136,3 @@ end
 
 addHook("MobjCollide", collide, MT_PLAYER)
 addHook("MobjMoveCollide", collide, MT_PLAYER)
-
-addHook('PreThinkFrame', do
-	for player in players.iterate do
-		if not NTOPP_Check(player) then continue end
-		if (player.fsm.state == ntopp_v2.enums.MACH3 
-		or player.fsm.state == ntopp_v2.enums.MACH2) then
-			if (P_GetPlayerControlDirection(player) == 2 
-			and P_IsObjectOnGround(player.mo))
-			and not player.powers[pw_justsprung] then
-				fsm.ChangeState(player, ntopp_v2.enums.DRIFT)
-			end
-			
-			if player.powers[pw_justsprung] then
-				player.pvars.drawangle = player.drawangle
-				player.pvars.thrustangle = player.drawangle
-			end
-		end
-		
-		if (player.fsm.state == ntopp_v2.enums.GRAB)
-		and player.mo.skin ~= "ngustavo" then
-			if (P_GetPlayerControlDirection(player) == 2) then
-				player.pvars.cancelledgrab = true
-				fsm.ChangeState(player, ntopp_v2.enums.BASE)
-				player.pvars.movespeed = ntopp_v2.machs[1]
-				if not P_IsObjectOnGround(player.mo)
-					player.mo.state = S_PEPPINO_SUPLEXDASHCNCL
-					player.mo.frame = A|FF_SPR2ENDSTATE
-				end
-			end
-		end
-		
-		if player.pflags & PF_SPINNING and player.fsm.state ~= ntopp_v2.enums.ROLL then
-			fsm.ChangeState(player, ntopp_v2.enums.BASE)
-			player.pvars.movespeed = ntopp_v2.machs[1]
-		end
-
-		if ((player.powers[pw_carry] or player.pflags & PF_SLIDING or player.mo.state == S_PLAY_STUN) and player.fsm.state ~= ntopp_v2.enums.BASE) then
-			fsm.ChangeState(player, ntopp_v2.enums.BASE)
-			player.pvars.movespeed = ntopp_v2.machs[1]
-		end
-	end
-end)
