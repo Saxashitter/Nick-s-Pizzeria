@@ -1,8 +1,7 @@
-# Nicks-Tower-of-Pizza-Pack
-the coolest pizza tower mod to exist (i think)
+# Nick's Pizzeria
+the dev team behind the coolest pizza tower mod to exist (i think)
 
-# WE DO NOT PERMIT RECORDING GAMEPLAY! WE ARE STILL IN A HEAVY DEVELOPMENT STATE, YOU CAN HOWEVER HOST WITH NTOPP!
-
+# YOU ARE FREE TO RECORD AND MODIFY ANYTHING HERE!
 # Dependencies
 - A terminal
 - Git
