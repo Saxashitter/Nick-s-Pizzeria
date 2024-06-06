@@ -10,15 +10,6 @@ fsmstates[ntopp_v2.enums.CROUCH]['npeppino'] = {
 		player.normalspeed = 8*FU
 		player.jumpfactor = $-($/3)
 	end,
-	playerthink = function(self, player)
-		if not (player.mo) then return end
-		if not (player.pvars) or player.playerstate == PST_DEAD then
-			player.pvars = NTOPP_Init()
-			if (player.playerstate == PST_DEAD) then
-				return
-			end
-		end
-	end,
 	think = function(self, player)
 		if (not P_IsObjectOnGround(player.mo)) then
 			/*if player.mo.state == S_PLAY_JUMP
@@ -52,15 +43,8 @@ fsmstates[ntopp_v2.enums.CROUCH]['npeppino'] = {
 				end
 			end
 		end
-		
-		local p = player
-		local ch = (p.mo.eflags & MFE_VERTICALFLIP) and p.mo.floorz or p.mo.ceilingz
-		local spingap = false
-		if p.mo.z+skins[p.mo.skin].height > ch
-			spingap = true
-		end
-		
-		if not (PT_FindPressed(player, "down", player.cmd.buttons)) and P_IsObjectOnGround(player.mo) and not spingap then
+
+		if not (player.cmd.buttons & BT_CUSTOM2) and P_IsObjectOnGround(player.mo) then
 			fsm.ChangeState(player, ntopp_v2.enums.BASE)
 		end
 	end,
@@ -71,3 +55,21 @@ fsmstates[ntopp_v2.enums.CROUCH]['npeppino'] = {
 		end
 	end
 }
+
+local function CheckHeight(player)
+	if not (player.mo) then return end
+	if (not isPTSkin(player.mo.skin)) then return end
+	if not (player.fsm) then return end
+	if not (player.pvars) then return end
+	
+	if player.fsm.state == ntopp_v2.enums.CROUCH then
+		return P_GetPlayerSpinHeight(player)
+	end
+end
+
+addHook("PlayerHeight", CheckHeight)
+addHook("PlayerCanEnterSpinGaps", CheckHeight)
+
+addHook("PlayerCanEnterSpinGaps", function(player)
+	return true
+end)

@@ -67,3 +67,119 @@ fsm.ChangeState = function(player, state)
 		player.fsm.state = state
 	end	
 end
+
+local function canRun(player)
+	if not (NTOPP_IsValid_1(player)) then
+		if (player.fsm or player.pvars) then
+			if player.fsm then
+				player.fsm = nil
+			end
+			if player.pvars and player.pvars.ntoppv2_grabbed then
+				if player.pvars.ntoppv2_grabbed.valid and player.pvars.ntoppv2_grabbed.type ~= MT_PLAYER then
+					player.pvars.ntoppv2_grabbed.ntoppv2_grabbed = nil
+					player.pvars.ntoppv2_grabbed = nil
+				end
+			end
+			if player.mo and player.ntoppv2_3dish then
+				player.mo.frame = $ & ~FF_PAPERSPRITE
+				player.ntoppv2_3dish = false
+			end
+			player.pvars = nil
+		end
+		return false
+	end
+	return true
+end
+
+local grabStates = {
+	[ntopp_v2.enums.BASE_GRABBEDENEMY] = true;
+	[ntopp_v2.enums.GRAB_KILLENEMY] = true;
+	[ntopp_v2.enums.SWINGDING] = true;
+	[ntopp_v2.enums.PILEDRIVER] = true
+}
+
+addHook('PlayerThink', function(player)
+	if not canRun(player) then return end
+	if not (player.pvars) then
+		player.pvars = NTOPP_Init()
+	end
+	if (player.fsm == nil) then
+		fsm.Init(player)
+	end
+
+	local state = fsm.getState(player.mo.skin, player.fsm.state)
+
+	if player.ntoppv2_plyrgrab
+	and player.fsm.state ~= ntopp_v2.enums.BASE then
+		state = fsm.getState(player.mo.skin, ntopp_v2.enums.BASE)
+		fsm.ChangeState(player, state)
+		player.pvars.movespeed = ntopp_v2.machs[1]
+	end
+
+	if player.pvars.ntoppv2_grabbed
+	and player.pvars.ntoppv2_grabbed.valid
+	and not grabStates[player.fsm.state] then
+		if player.pvars.ntoppv2_grabbed.type ~= MT_PLAYER then
+			player.pvars.ntoppv2_grabbed.target = nil
+			P_KillMobj(player.pvars.ntoppv2_grabbed, player.mo, player.mo)
+		else
+			player.pvars.ntoppv2_grabbed.player.ntoppv2_plyrgrab = nil
+		end
+		player.pvars.ntoppv2_grabbed = nil
+	end
+
+	if (state
+	and state.playerthink) then
+		state:playerthink(player)
+	end
+	
+	player.pvars.prevkeys = player.cmd.buttons
+	
+	if player.ntoppv2_3dish then
+		player.mo.frame = $|FF_PAPERSPRITE
+	end
+	
+	if (player.pvars.forcedstate 
+	and player.mo.state ~= player.pvars.forcedstate
+	and (
+		(not (states[player.mo.state].frame & FF_SPR2ENDSTATE) and
+		states[player.mo.state].nextstate ~= player.pvars.forcedstate
+	)
+	or (
+		states[player.mo.state].frame & FF_SPR2ENDSTATE
+		and states[player.mo.state].var1 ~= player.pvars.forcedstate
+	))) then
+	//phew, thats alotta checks
+		player.mo.state = player.pvars.forcedstate // useful to force animations
+	end
+end)
+
+addHook('ThinkFrame', function()
+	for player in players.iterate do
+		if not canRun(player) then continue end
+
+		if (player.pvars.curstate ~= player.pvars.state) then
+			player.pvars.laststate = player.pvars.curstate
+			player.pvars.curstate = player.mo.state
+		end
+
+		if player.ntoppv2_gravitydisabled and P_IsObjectOnGround(player.mo) then
+			player.ntoppv2_gravitydisabled = false
+		end
+		if player.ntoppv2_diagonalspring and P_IsObjectOnGround(player.mo) then
+			player.ntoppv2_diagonalspring = false
+		end
+		if player.pvars.jumpheight ~= nil and P_IsObjectOnGround(player.mo) then
+			player.pvars.jumpheight = nil
+		end
+		if player.mo.skin == "nthe_noise" and not player.pvars.cancrusher and P_IsObjectOnGround(player.mo) then
+			player.pvars.cancrusher = true
+		end
+		local state = fsm.getState(player.mo.skin, player.fsm.state)
+
+		if (state
+		and state.think) then
+			state:think(player)
+		end
+	end
+end)

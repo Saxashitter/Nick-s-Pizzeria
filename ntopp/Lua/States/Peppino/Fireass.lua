@@ -13,58 +13,40 @@ end
 fsmstates[ntopp_v2.enums.FIREASS]['npeppino'] = {
 	name = "Fireass",
 	enter = function(self, player, state)
-		L_ZLaunch(player.mo, 25*FU)
+		if player.mo.eflags & MFE_VERTICALFLIP and player.mo.z ~= player.mo.floorz
+		or player.mo.z+player.mo.height ~= player.mo.ceilingz
+			L_ZLaunch(player.mo, 25*FU)
+		else
+			L_ZLaunch(player.mo, -25*FU)
+		end
 		player.pvars.forcedstate = S_PEPPINO_FIREASS
 		player.pvars.fireasstime = 5
+		player.pvars.hitground = false
+		player.pvars.movespeed = ntopp_v2.machs[1]
 		if not player.pvars.fascreamdelay
-	if player.mo.skin == "nthe_noise" //added this, i forgot to add it last time lol -rbf
-	S_StartSound(player.mo, sfx_dwaha)
-	else
-	S_StartSound(player.mo, sfx_eyaow)
-	end
-			player.pvars.fascreamdelay = 3*TICRATE
+			if player.mo.skin == "nthe_noise" //added this, i forgot to add it last time lol -rbf
+			S_StartSound(player.mo, sfx_dwaha)
+		else
+			S_StartSound(player.mo, sfx_eyaow)
+		end
+		player.pvars.fascreamdelay = 3*TICRATE
 		end
 	end,
 	playerthink = function(self, p)
-		if not (p.mo) then return end
-		if not (p.pvars) or p.playerstate == PST_DEAD then
-			p.pvars = NTOPP_Init()
-			if (p.playerstate == PST_DEAD) then
-				return
-			end
-		end
-		
 		p.pflags = $1|PF_JUMPSTASIS
 		
 		local pv = p.pvars
-		local move = P_GetPlayerControlDirection(p)
 		
 		if pv.fireasstime
 			pv.fireasstime = abs($)-1
 		end
-		if p.mo.state ~= S_PEPPINO_FIREASSGRND
-			/*if move ~= 0
-				if move == 1
-					pv.movespeed = PT_Approach($, ntopp_v2.machs[1], convertMach(FU/2))
-				else
-					pv.movespeed = PT_Approach($, 0, convertMach(FU/2))
-				end
-			else
-				pv.movespeed = PT_Approach($, 0, convertMach(FU/10))
-			end*/
-			pv.movespeed = ntopp_v2.machs[1]
-		end
 		p.normalspeed = skins[p.mo.skin].normalspeed
 		
-		if not P_IsObjectOnGround(p.mo)
-		and move == 0
-			p.mo.momx = FixedMul($, p.mo.friction)
-			p.mo.momy = FixedMul($, p.mo.friction)
-		elseif pv.forcedstate ~= S_PEPPINO_FIREASSGRND
+		if pv.forcedstate ~= S_PEPPINO_FIREASSGRND
 		and not pv.fireasstime
 		and not (p.mo.eflags & MFE_TOUCHLAVA)
+		and pv.hitground
 			pv.forcedstate = S_PEPPINO_FIREASSGRND
-			pv.movespeed = convertMach(6*FU)
 		end
 		
 		if (p.mo.eflags & MFE_JUSTHITFLOOR)
@@ -73,21 +55,13 @@ fsmstates[ntopp_v2.enums.FIREASS]['npeppino'] = {
 				p.powers[pw_flashing] = 0
 				return
 			end
-			pv.thrustangle = p.drawangle
-		end
-		
-		if P_GetPlayerControlDirection(p) ~= 2
-			p.acceleration = 200
-		else
-			p.acceleration = skins[p.mo.skin].acceleration
 		end
 		
 		local uframe = ((p.mo.sprite2 ~= 0) and p.mo.sprite2) or 1
-		if p.mo.state == S_PEPPINO_FIREASSGRND
+		if p.pvars.hitground
 			p.pflags = $1|PF_STASIS
 			P_InstaThrust(p.mo, pv.thrustangle, pv.movespeed)
 			p.drawangle = pv.thrustangle
-			
 			if pv.movespeed > 0
 				pv.movespeed = $-convertMach(FU/4)
 			end
@@ -100,6 +74,13 @@ fsmstates[ntopp_v2.enums.FIREASS]['npeppino'] = {
 	think = function(self, p)
 		local pv = p.pvars
 		local uframe = ((p.mo.sprite2 ~= 0) and p.mo.sprite2) or 1
+		if P_IsObjectOnGround(p.mo)
+		and not pv.fireasstime then
+			if not p.pvars.hitground then
+				p.pvars.thrustangle = p.drawangle
+			end
+			p.pvars.hitground = true
+		end
 		if p.mo.state == S_PEPPINO_FIREASSGRND
 		and p.mo.frame >= (skins[p.mo.skin].sprites[uframe].numframes-1)|FF_ANIMATE
 			fsm.ChangeState(p, ntopp_v2.enums.BASE)

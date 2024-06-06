@@ -97,6 +97,27 @@ ntopp_v2.machsounds[4] = {
 	["ngustavo"] = {
 		[1] = sfx_gum1,
 		[2] = sfx_gum1, //if you somehow manage to trigger peppino's mach run instead of gustavo and brick's dash
+		[3] = {
+			[1] = {
+				[1] = sfx_gum2,
+				[2] = function(player) return P_IsObjectOnGround(player.mo) end
+			},
+			[2] = {
+				[1] = sfx_gum2a,
+				[2] = function(player) return not P_IsObjectOnGround(player.mo) end
+			}
+		},
+		[4] = {
+			[1] = {
+				[1] = sfx_nmc4g,
+				[2] = function(player) return P_IsObjectOnGround(player.mo) end
+			},
+			[2] = sfx_nmch4
+		}
+	},
+	["ngustavo"] = {
+		[1] = sfx_gum1,
+		[2] = sfx_gum1, //if you somehow manage to trigger peppino's mach run instead of gustavo and brick's dash
 		[3] = sfx_gum2,
 		[4] = sfx_gum2 //if you somehow manage to trigger peppino's mach run instead of gustavo and brick's dash
 	}
@@ -104,8 +125,3 @@ ntopp_v2.machsounds[4] = {
 
 ntopp_v2.machsounds[4]["nthe_noise"][2] = ntopp_v2.machsounds[4]["nthe_noise"][1]
 ntopp_v2.machsounds[4]["ngustavo"][2] = ntopp_v2.machsounds[4]["ngustavo"][1]
-
-ntopp_v2.COMMAND_GRABME = COM_AddCommand('ntoppv2_options', function(player)
-	player.ntoppv2_optionsopen = true
-	ntopp_v2.change_options_state(player,ntopp_v2.states.page)
-end)

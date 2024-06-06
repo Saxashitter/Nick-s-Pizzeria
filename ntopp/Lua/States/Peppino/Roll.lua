@@ -27,14 +27,7 @@ fsmstates[ntopp_v2.enums.ROLL]['npeppino'] = {
 		P_MovePlayer(player)
 	end,
 	think = function(self, player)
-		local p = player
-		local ch = (p.mo.eflags & MFE_VERTICALFLIP) and p.mo.floorz or p.mo.ceilingz
-		local spingap = false
-		if p.mo.z+skins[p.mo.skin].height > ch
-			spingap = true
-		end
-		
-		if not (PT_FindPressed(player, "down", player.cmd.buttons)) and P_IsObjectOnGround(player.mo) and not (player.pvars.slidetime) and not spingap then
+		if not (player.cmd.buttons & BT_CUSTOM2) and P_IsObjectOnGround(player.mo) and not (player.pvars.slidetime) then
 			fsm.ChangeState(player, GetMachSpeedEnum(player.pvars.movespeed))
 			return
 		end

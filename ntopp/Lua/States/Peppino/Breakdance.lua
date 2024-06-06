@@ -2,6 +2,8 @@ fsmstates[ntopp_v2.enums.BREAKDANCE]['npeppino'] = {
 	name = "Breakdance",
 	enter = function(self,player)
 		player.pvars.forcedstate = S_PEPPINO_BREAKDANCE1
+		player.pvars.movespeed = ntopp_v2.machs[1]
+		player.normalspeed = skins[player.mo.skin].normalspeed
 		player.pvars.getjiggy = false
 		player.pvars.time = TICRATE
 		S_StartSound(player.mo, sfx_breda)
@@ -30,7 +32,7 @@ fsmstates[ntopp_v2.enums.BREAKDANCE]['npeppino'] = {
 			player.pvars.time = TICRATE-TICRATE/3
 		end
 	
-		if not (PT_FindPressed(player, "taunt", player.cmd.buttons))
+		if not (player.cmd.buttons & BT_TOSSFLAG)
 		or not P_IsObjectOnGround(player.mo) then
 			fsm.ChangeState(player, ntopp_v2.enums.BASE)
 			return

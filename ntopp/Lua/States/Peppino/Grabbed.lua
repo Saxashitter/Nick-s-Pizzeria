@@ -1,7 +1,11 @@
 fsmstates[ntopp_v2.enums.GRABBED]['npeppino'] = {
 	name = "Grabbed",
 	enter = function(self, player)
-		P_InstaThrust(player.mo, player.drawangle, -16*FU)
+		if gamemap == 12 then
+			P_InstaThrust(player.mo, player.drawangle, -24*FU)
+		else
+			P_InstaThrust(player.mo, player.drawangle, -16*FU)
+		end
 		player.pvars.forcedstate = L_Choose(S_PEPPINO_KUNGFU_1, S_PEPPINO_KUNGFU_2, S_PEPPINO_KUNGFU_3)
 		player.pvars.time = 20
 	end,

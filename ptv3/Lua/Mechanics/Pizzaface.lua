@@ -26,6 +26,8 @@ states[S_PIZZAFACE_AI] = {
     nextstate = S_PIZZAFACE_AI
 }
 
+local default_flyspeed = 23*FU
+
 local function followC(p)
 	return p.mo.health and p.ptv3 and not p.ptv3.pizzaface and not p.ptv3.insecret and not (p.exiting)
 end
@@ -78,7 +80,7 @@ local function getNearestPlayer(pos, conditions)
 end
 
 addHook('MobjSpawn', function(pf)
-	pf.flyspeed = 23*FU
+	pf.flyspeed = default_flyspeed
 	S_StartSound(nil, sfx_pflgh)
 
 	local player = getNearestPlayer(pf, followC)
@@ -86,6 +88,20 @@ addHook('MobjSpawn', function(pf)
 	if not player then return end
 	pf.target = player.mo
 end, MT_PTV3_PIZZAFACE)
+
+rawset(_G, "L_SpeedCap", function(mo,limit,factor)
+	local spd_xy = R_PointToDist2(0,0,mo.momx,mo.momy)
+	local spd, ang =
+		R_PointToDist2(0,0,spd_xy,mo.momz),
+		R_PointToAngle2(0,0,mo.momx,mo.momy)
+	if spd > limit
+		if factor == nil
+			factor = FixedDiv(limit,spd)
+		end
+		L_DoBrakes(mo,factor)
+		return factor
+	end
+end)
 
 addHook('MobjThinker', function(pf)
 	if pf.tracer then return end
@@ -100,10 +116,34 @@ addHook('MobjThinker', function(pf)
 
 	local player = getNearestPlayer(pf, followC)
 	pf.target = player and player.mo
-	pf.momx,pf.momy,pf.momz = 0,0,0
+	if not pf.target then
+		pf.momx,pf.momy,pf.momz = 0,0,0
+	end
 	if pf.target then
 		pf.angle = R_PointToAngle2(pf.x, pf.y, pf.target.x, pf.target.y)
-		P_FlyTo(pf, pf.target.x, pf.target.y, pf.target.z, pf.flyspeed)
+		if gametype == GT_PTV3DM then
+			-- a bit of yoink from FlyTo
+			local sped = 3*pf.flyspeed/2
+			local flyto = P_AproxDistance(P_AproxDistance(pf.target.x - pf.x, pf.target.y - pf.y), pf.target.z - pf.z)
+			if flyto < 1 then
+				flyto = 1
+			end
+            local tmomx = FixedMul(FixedDiv(pf.target.x - pf.x, flyto), sped)
+            local tmomy = FixedMul(FixedDiv(pf.target.y - pf.y, flyto), sped)
+            local tmomz = FixedMul(FixedDiv(pf.target.z - pf.z, flyto), sped)
+			-- and again
+			local sped2 = pf.flyspeed/15
+			local flyto2 = P_AproxDistance(P_AproxDistance(tmomx - pf.momx, tmomy - pf.momy), tmomz - pf.momz)
+			if flyto2 < 1 then
+				flyto2 = 1
+			end
+            pf.momx = $ + FixedMul(FixedDiv(tmomx - pf.momx, flyto2), sped2)
+            pf.momy = $ + FixedMul(FixedDiv(tmomy - pf.momy, flyto2), sped2)
+            pf.momz = $ + FixedMul(FixedDiv(tmomz - pf.momz, flyto2), sped2)
+			L_SpeedCap(pf, sped)
+		else
+			P_FlyTo(pf, pf.target.x, pf.target.y, pf.target.z, pf.flyspeed)
+		end
 	end
 end, MT_PTV3_PIZZAFACE)
 
@@ -122,6 +162,7 @@ local function PFTouchSpecial(pf, pmo)
 	and multiplayer
 	and not (pmo.health) then
 		pmo.player.ptv3.specforce = true
+		pf.flyspeed = default_flyspeed
 	end
 end
 

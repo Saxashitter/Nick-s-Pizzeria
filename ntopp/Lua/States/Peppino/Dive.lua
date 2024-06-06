@@ -9,13 +9,6 @@ fsmstates[ntopp_v2.enums.DIVE]['npeppino'] = {
 		end
 	end,
 	playerthink = function(self, player)
-		if not (player.mo) then return end
-		if not (player.pvars) or player.playerstate == PST_DEAD then
-			player.pvars = NTOPP_Init()
-			if (player.playerstate == PST_DEAD) then
-				return
-			end
-		end
 		if (player.pvars.slidetime) then
 			player.pvars.slidetime = $-1
 		end
@@ -26,7 +19,7 @@ fsmstates[ntopp_v2.enums.DIVE]['npeppino'] = {
 		end
 		P_InstaThrust(player.mo, player.drawangle, player.pvars.movespeed)
 		P_MovePlayer(player)
-		if not (player.gotflag) and ((player.cmd.buttons & BT_JUMP) and not (player.prevkeys and player.prevkeys & BT_JUMP)) and not P_IsObjectOnGround(player.mo)
+		if not (player.gotflag) and ((player.cmd.buttons & BT_JUMP) and not (player.pvars.prevkeys and player.pvars.prevkeys & BT_JUMP)) and not P_IsObjectOnGround(player.mo)
 			player.pflags = $ & ~PF_FULLSTASIS
 			fsm.ChangeState(player, ntopp_v2.enums.BODYSLAM)
 			player.pvars.forcedstate = S_PEPPINO_DIVEBOMB

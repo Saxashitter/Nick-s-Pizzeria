@@ -22,7 +22,18 @@ G_AddGametype({
     intermissiontype = int_match,
     headerleftcolor = 222,
     headerrightcolor = 84,
-    description = "Pizzaface and Snick just won't give you a break, won't they? Maneuver your way over the two, raise the time and be the last one standing in this high-stake version of Pizza Time!"
+    description = "Pizzaface and Snick just won't give you a break, won't they? Maneuver your way over the two, eliminate your friends and be the last one standing in this high-stake version of Pizza Time!"
+})
+
+G_AddGametype({
+    name = "P.T.: PizzaTag",
+    identifier = "PTV3T",
+    typeoflevel = TOL_MATCH,
+    rules = GTR_TAG|GTR_FRIENDLYFIRE|GTR_OVERTIME|GTR_POINTLIMIT|GTR_TIMELIMIT|GTR_HURTMESSAGES
+    intermissiontype = int_match,
+    headerleftcolor = 222,
+    headerrightcolor = 84,
+    description = "Things are heating up. Play a match of Tag while Pizzaface chases all the players! If Overtime starts, Pizzaface will begin eliminating all the players!"
 })
 
 function PTV3:isPTV3(dontCheckState)

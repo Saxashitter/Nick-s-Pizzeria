@@ -46,8 +46,8 @@ local function initializeVars(p)
 	}
 end
 
-sfxinfo[freeslot("sfx_tvswtc")].caption = "Technical Diffculties." //added this -rbf
-sfxinfo[freeslot("sfx_tvswbc")].caption = "TV Restarted"
+freeslot("sfx_tvswtc")
+freeslot("sfx_tvswbc")
 
 addHook("PlayerSpawn", function(p)
 	if p.ntoppimmortal == nil
@@ -66,8 +66,7 @@ addHook("PlayerSpawn", function(p)
 end)
 
 addHook("PlayerThink", function(p)
-	if not (p.mo and p.mo.valid)
-	or not isIM(p.mo.skin)
+	if not NTOPP_Check(p) then
 		if p.ntoppimmortal
 		and p.ntoppimmortal.difficulty
 			local i = p.ntoppimmortal
@@ -128,11 +127,7 @@ addHook("PlayerThink", function(p)
 		
 		if (i.fakeplyr and i.fakeplyr.valid)
 			local fp = i.fakeplyr
-			fp.skin = pmo.skin
-	        fp.state = pmo.state
-			//so that the player won't lose sprites -rbf
-            fp.sprite = pmo.sprite
-	        fp.sprite2 = pmo.sprite2
+			fp.state = pmo.state
 			fp.frame = pmo.frame
 		end
 		
@@ -172,7 +167,7 @@ end)
 
 addHook("ShouldDamage", function(pmo, _, _, _, dmg)
 	local p = pmo.player
-	if not isIM(pmo.skin) return end
+	if not NTOPP_Check(p) return end
 	
 	local i = p.ntoppimmortal
 	local d = i.difft
@@ -181,12 +176,9 @@ addHook("ShouldDamage", function(pmo, _, _, _, dmg)
 	
 	if dmg ~= DMG_DEATHPIT return end
 	
-	if p.fsm
-	and p.fsm.state
-		p.fsm.state = ntopp_v2.enums.BASE
-		p.pvars.forcedstate = nil
-		p.pvars.movespeed = 8*FU
-	end
+	fsm.ChangeState(p, ntopp_v2.enums.BASE)
+	p.pvars.forcedstate = nil
+	p.pvars.movespeed = ntopp_v2.machs[1]
 	if pmo.skin == "nthe_noise"
 		i.difft.frame = P_RandomRange(5, 7)
 	elseif pmo.skin == "ngustavo"
@@ -211,9 +203,6 @@ addHook("ShouldDamage", function(pmo, _, _, _, dmg)
 	fp.target = pmo
 	fp.skin = pmo.skin
 	fp.state = pmo.state
-	fp.sprite = pmo.sprite
-	fp.sprite2 = pmo.sprite2
-	fp.frame = A
 	fp.flags = MF_NOCLIP|MF_NOCLIPHEIGHT
 	fp.flags2 = pmo.flags2 & ~MF2_DONTDRAW
 	fp.eflags = pmo.eflags

@@ -27,13 +27,6 @@ fsmstates[ntopp_v2.enums.SUPERJUMPSTART]['npeppino'] = {
 		end
 	end,
 	think = function(self, player)
-		if not (player.mo) then return end
-		if not (player.pvars) or player.playerstate == PST_DEAD then
-			player.pvars = NTOPP_Init()
-			if (player.playerstate == PST_DEAD) then
-				return
-			end
-		end
 		if player.mo.skin ~= "nthe_noise" and not S_SoundPlaying(player.mo, sfx_sjpre) then
 			if not S_SoundPlaying(player.mo, sfx_sjhol) then
 				S_StartSound(player.mo, sfx_sjhol)
@@ -56,21 +49,21 @@ fsmstates[ntopp_v2.enums.SUPERJUMPSTART]['npeppino'] = {
 			player.pflags = $|PF_JUMPSTASIS
 			player.normalspeed = 4*FU
 		end
-		
-		local p = player
-		local ch = (p.mo.eflags & MFE_VERTICALFLIP) and p.mo.floorz or p.mo.ceilingz
-		local spingap = false
-		if p.mo.z+skins[p.mo.skin].height > ch
-			spingap = true
-		end
-		
-		if not (PT_FindPressed(player, "up", player.cmd.buttons)) and (P_IsObjectOnGround(player.mo) or player.ntoppv2_midairsj) and not spingap then
+
+		if not (player.cmd.buttons & BT_CUSTOM3) and (P_IsObjectOnGround(player.mo) or player.ntoppv2_midairsj) then
 			fsm.ChangeState(player, ntopp_v2.enums.SUPERJUMP)
 		end
 	end,
 	exit = function(self, player, state)
 		if player.mo then
 			player.normalspeed = skins[player.mo.skin].normalspeed
+			if player.mo.skin ~= "nthe_noise"
+				S_StopSoundByID(player.mo, sfx_sjpre)
+				S_StopSoundByID(player.mo, sfx_sjhol)
+			else
+				S_StopSoundByID(player.mo, sfx_nsjstr)
+				S_StopSoundByID(player.mo, sfx_nsjlop)
+			end
 		end
 	end
 }
@@ -141,15 +134,15 @@ fsmstates[ntopp_v2.enums.SUPERJUMP]['npeppino'] = {
 		player.pvars.drawangle = $ - ANG15*2
 		player.drawangle = player.pvars.drawangle
 		
-		local spinpressed = (player.cmd.buttons & BT_SPIN) and not (player.prevkeys and player.prevkeys & BT_SPIN)
-		local grabpressed = (PT_FindPressed(player, "atk", player.cmd.buttons)) and not (player.prevkeys and PT_FindPressed(player, "atk", player.prevkeys))
+		local spinpressed = (player.cmd.buttons & BT_SPIN) and not (player.pvars.prevkeys and player.pvars.prevkeys & BT_SPIN)
+		local grabpressed = (player.cmd.buttons & BT_CUSTOM1) and not (player.pvars.prevkeys and player.pvars.prevkeys & BT_CUSTOM1)
 		
 		if (spinpressed or grabpressed) then
 			local state = player.mo.skin == "nthe_noise" and ntopp_v2.enums.MACH2 or ntopp_v2.enums.SUPERJUMPCANCEL
 			if state == ntopp_v2.enums.MACH2 then
 				player.pvars.movespeed = ntopp_v2.machs[3]
 				player.mo.momz = 0
-				player.drawangle = player.cmd.angleturn<<16 + R_PointToAngle2(0, 0, player.cmd.forwardmove*FRACUNIT, -player.cmd.sidemove*FRACUNIT)
+				player.drawangle = NTOPP_ReturnControlsAngle(player)
 			end
 			fsm.ChangeState(player, state)
 			if state == ntopp_v2.enums.MACH2 then

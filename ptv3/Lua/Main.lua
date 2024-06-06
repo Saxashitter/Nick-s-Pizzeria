@@ -23,7 +23,8 @@ local function FakeExit(p)
 
 	if (p.cmd.buttons & BT_ATTACK
 	and not (p.ptv3.buttons & BT_ATTACK))
-	or p.ptv3.extreme then
+	or p.ptv3.extreme
+	or gametype == GT_PTV3DM then
 		PTV3:newLap(p)
 	end
 end
@@ -242,22 +243,30 @@ addHook('PostThinkFrame', function()
 			PTV3:endGame()
 		end
 	end
-	
-	local alive = PTV3:playerCount()
+
+	local current,_,_,_,alive,total = PTV3:playerCount()
+
+	if gametype == GT_PTV3DM
+	and PTV3.pizzatime
+	and not PTV3.overtime
+	and #total > 2
+	and #current == 2 then
+		PTV3:overtimeToggle()
+	end
 
 	if (PTV3.pizzaface or PTV3.snick)
 	and multiplayer
-	and #alive == 0 then
+	and #alive == 0
+	or (gametype == GT_PTV3DM and #total > 2 and #alive == 1) then
 		PTV3:endGame()
 	end
 
 	if gametype == GT_PTV3DM
 	and PTV3.pizzaface
 	and PTV3.pizzaface.valid then
-		if not PTV3.overtime then
-			PTV3.pizzaface.flyspeed = $+(FU/(35*15))
-		else
-			PTV3.pizzaface.flyspeed = $+(FU/(35/2))
+		local increase = (FU/(TICRATE*5))
+		if PTV3.overtime then
+			PTV3.pizzaface.flyspeed = $+increase
 		end
 	end
 

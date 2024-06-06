@@ -110,7 +110,7 @@ fsmstates[ntopp_v2.enums.BASE]["ngustavo"] = {
 		if (player.pflags & PF_SLIDING) then return end
 		if (player.pflags & PF_SPINNING) then return end
 		
-		if (PT_FindPressed(player, "taunt", player.cmd.buttons)) and not (player.prevkeys and PT_FindPressed(player, "taunt", player.prevkeys)) and player.ntoppv2_hasbrick then
+		if (player.cmd.buttons & BT_TOSSFLAG) and not (player.prevkeys and player.prevkeys & BT_TOSSFLAG) and player.ntoppv2_hasbrick then
 			fsm.ChangeState(player, ntopp_v2.enums.TAUNT)
 			return
 		end
@@ -119,7 +119,7 @@ fsmstates[ntopp_v2.enums.BASE]["ngustavo"] = {
 		if (player.pflags & PF_STASIS) then return end
 		if (player.exiting) then return end
 		
-		if not (player.gotflag) and ((PT_FindPressed(player, "atk", player.cmd.buttons) and not (player.prevkeys and PT_FindPressed(player, "atk", player.prevkeys)))) then
+		if not (player.gotflag) and ((player.cmd.buttons & BT_CUSTOM1 and not (player.prevkeys and player.prevkeys & BT_CUSTOM1))) then
 			fsm.ChangeState(player, ntopp_v2.enums.GRAB)
 			return
 		end
@@ -129,25 +129,19 @@ fsmstates[ntopp_v2.enums.BASE]["ngustavo"] = {
 			return
 		end*/
 		
-		if (PT_FindPressed(player, "down", player.cmd.buttons)) and P_IsObjectOnGround(player.mo) then
+		if (player.cmd.buttons & BT_CUSTOM2) and P_IsObjectOnGround(player.mo) then
 			fsm.ChangeState(player, ntopp_v2.enums.CROUCH)
 			return
 		end
 		
-		if not (player.gotflag) and ((PT_FindPressed(player, "down", player.cmd.buttons)) and not (player.prevkeys and PT_FindPressed(player, "atk", player.prevkeys))) and not P_IsObjectOnGround(player.mo)
+		if not (player.gotflag) and ((player.cmd.buttons & BT_CUSTOM2) and not (player.prevkeys and player.prevkeys & BT_CUSTOM2)) and not P_IsObjectOnGround(player.mo)
 			fsm.ChangeState(player, ntopp_v2.enums.BODYSLAM)
-			return
-		end
-		
-		if not (player.gotflag) and ((player.cmd.buttons & BT_SPIN) and not (player.prevkeys and player.prevkeys & BT_SPIN)) and not P_IsObjectOnGround(player.mo) and player.ntoppv2_hasbrick then
-			fsm.ChangeState(player, ntopp_v2.enums.DIVE)
 			return
 		end
 		
 		if NerfAbility() then return end
 		
-		if player.pvars.supertauntready and PT_FindPressed(player, "up", player.cmd.buttons) and (PT_FindPressed(player, "taunt", player.cmd.buttons)) and not (player.prevkeys and PT_FindPressed(player, "taunt", player.prevkeys))
-		and player.ntoppv2_hasbrick then
+		if player.pvars.supertauntready and player.cmd.buttons & BT_CUSTOM3 and (player.cmd.buttons & BT_TOSSFLAG) and not (player.prevkeys and player.prevkeys & BT_TOSSFLAG) and player.ntoppv2_hasbrick then
 			fsm.ChangeState(player, ntopp_v2.enums.SUPERTAUNT)
 			return
 		end
@@ -161,3 +155,15 @@ fsmstates[ntopp_v2.enums.BASE]["ngustavo"] = {
 		end
 	end
 }
+
+addHook("AbilitySpecial", function(player)
+    if player.mo.skin == "ngustavo" then
+        if player.cmd.buttons & BT_JUMP and player.ntoppv2_hasbrick then
+			if player.pflags&PF_THOKKED
+			return true
+			end
+            fsm.ChangeState(player, ntopp_v2.enums.DIVE)
+			return
+        end
+    end
+end)

@@ -201,7 +201,7 @@ function PTV3:logEvent(text, type)
 		notifer = ">> - "
 	end
 		
-	chatprint(notifer..text)
+	print("** "..notifer..text.." **")
 end
 
 function PTV3:playerCount()
@@ -244,6 +244,9 @@ end
 
 function PTV3:canLap(p)
 	if not p.ptv3 then return 0 end
+	if gametype == GT_PTV3DM then
+		return 1
+	end
 	if not self.overtime then
 		if p.ptv3.laps < self.max_laps then
 			return 1

@@ -22,18 +22,9 @@ fsmstates[ntopp_v2.enums.BODYSLAM]['npeppino'] = {
 		S_StartSound(player.mo, sfx_gpstar)
 	end,
 	playerthink = function(self, player)
-		if not (player.mo) then return end
-		if not (player.pvars) or player.playerstate == PST_DEAD then
-			player.pvars = NTOPP_Init()
-			if (player.playerstate == PST_DEAD) then
-				return
-			end
-		end
-	end,
-	playerthink = function(self, player)
 		if player.pvars.forcedstate == S_NOISE_CRUSHER then
 			if player.cmd.buttons & BT_CUSTOM1
-			and not (player.prevkeys & BT_CUSTOM1) then
+			and not (player.pvars.prevkeys & BT_CUSTOM1) then
 				player.pvars.movespeed = ntopp_v2.machs[3]
 				fsm.ChangeState(player, ntopp_v2.enums.MACH2)
 				player.pvars.forcedstate = S_NOISE_SPIN

@@ -4,6 +4,10 @@ local music = {
 	"LAP3LO",
 	"FUNFRE"
 }
+local otmusic = {
+	[GT_PTV3] = "OVRTIM";
+	[GT_PTV3DM] = "OVRTDM"
+}
 
 local function playPizzaTimeMusic()
 	if not PTV3:isPTV3() then return end
@@ -53,7 +57,8 @@ addHook('PostThinkFrame', function()
 		song = "AOTKPS"
 	end
 	if PTV3.overtime then
-		song = "OVRTRD"
+		local gametype = multiplayer and gametype or GT_PTV3 -- for singleplayer
+		song = otmusic[gametype]
 		loop = false
 	elseif p.ptv3.extreme then
 		song = "ACFTQ"

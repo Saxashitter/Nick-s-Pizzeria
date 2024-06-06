@@ -40,3 +40,42 @@ fsmstates[ntopp_v2.enums.STUN]['npeppino'] = {
 		fsm.ChangeState(player, ntopp_v2.enums.BASE)
 	end
 }
+
+addHook('MobjMoveBlocked', function(mo, mobj, line)
+	local player = mo.player
+	if not NTOPP_Check(player) then return end
+	
+	if not (line and line.valid) then return end
+	
+	if player.fsm.state ~= ntopp_v2.enums.MACH1 
+	and player.fsm.state ~= ntopp_v2.enums.MACH2 
+	and player.fsm.state ~= ntopp_v2.enums.MACH3
+	and (player.fsm.state ~= ntopp_v2.enums.GRAB or player.mo.skin == "ngustavo")
+	and player.fsm.state ~= ntopp_v2.enums.LONGJUMP
+	and player.fsm.state ~= ntopp_v2.enums.DIVE
+	and player.fsm.state ~= ntopp_v2.enums.SKID
+	and player.fsm.state ~= ntopp_v2.enums.ROLL
+	then return end
+	
+	if player.mo.skin == "nthe_noise" and player.fsm.state == ntopp_v2.enums.DIVE then
+		return
+	end
+
+	if player.mo.skin == "ngustavo" then
+		if player.fsm.state == ntopp_v2.enums.DIVE or player.fsm.state == ntoppv2.enums.WALLCLIMB then
+			return
+		end
+	end
+	
+	if (not P_IsObjectOnGround(mo) and not (player.fsm.state == ntopp_v2.enums.DIVE or player.fsm.state == ntopp_v2.enums.SKID))
+	or (P_IsObjectOnGround(mo) and player.mo.standingslope and not (line and line.flags & ML_NOCLIMB)) 
+	then return end
+	
+	local linex,liney = P_ClosestPointOnLine(player.mo.x,player.mo.y,line)
+	local lineangle = R_PointToAngle2(player.mo.x,player.mo.y,linex,liney)
+	local diff = player.mo.angle - lineangle
+	
+	if diff <= ANG1*35 and diff >= -ANG1*35 then
+		fsm.ChangeState(player, ntopp_v2.enums.STUN)
+	end
+end, MT_PLAYER)

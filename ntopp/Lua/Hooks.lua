@@ -95,20 +95,13 @@ addHook("MobjLineCollide", function(mo, line)
   end
 end, MT_PLAYER)
 
-addHook('MapChange', function()
-	for player in players.iterate
-		if player.grabbed then
-			player.grabbed = false
-		end
-		player.tv_animations = nil
-	end
-end)
-
 local savedkeys = nil
+local jump_buffer = false
+
+local jumpdown
+
 addHook('PlayerCmd', function(player, cmd)
-	if not player.mo then savedkeys = nil return end
-	if not isPTSkin(player.mo.skin) then savedkeys = nil return end
-	if not player.fsm then savedkeys = nil return end
+	if not NTOPP_Check(player) then savedkeys = nil; jump_buffer = false; return end
 	
 	if (player.fsm.state == ntopp_v2.enums.BASE
 	or player.fsm.state == ntopp_v2.enums.MACH1
@@ -125,123 +118,23 @@ addHook('PlayerCmd', function(player, cmd)
 			end
 		end
 	end
+
+	if not P_IsObjectOnGround(player.mo) then
+		if cmd.buttons & BT_JUMP
+		and not jumpdown then
+			jump_buffer = true
+		elseif not (cmd.buttons & BT_JUMP) then
+			jump_buffer = false
+		end
+	elseif jump_buffer then
+		cmd.buttons = $|BT_JUMP
+		jump_buffer = false
+	end
+
+	jumpdown = (cmd.buttons & BT_JUMP)
 end)
 
-addHook('PlayerThink', function(player)
-	if not (player.mo and isPTSkin(player.mo.skin)) then
-		if (player.fsm or player.pvars or player.laststate or player.curstate or player.prevkeys) then
-			player.fsm = nil
-			if player.pvars and player.pvars.ntoppv2_grabbed then
-				if player.pvars.ntoppv2_grabbed.valid and player.pvars.ntoppv2_grabbed.type ~= MT_PLAYER then
-					player.pvars.ntoppv2_grabbed.ntoppv2_grabbed = nil
-					player.pvars.ntoppv2_grabbed = nil
-				end
-			end
-			if player.mo and player.ntoppv2_3dish then
-				player.mo.frame = $ & ~FF_PAPERSPRITE
-				player.ntoppv2_3dish = false
-			end
-			player.pvars = nil
-			player.laststate = nil
-			player.curstate = nil
-			player.prevkeys = nil
-		end
-		return
-	end
-	if (player.fsm == nil) then
-		fsm.Init(player)
-	end
-	if not (player.pvars) then
-		player.pvars = NTOPP_Init()
-	end
 
-	if (player.curstate ~= player.mo.state) then
-		player.laststate = player.curstate
-		player.curstate = player.mo.state
-	end
-
-	local state = fsm.getState(player.mo.skin, player.fsm.state)
-
-	if (state
-	and state.playerthink) then
-		state:playerthink(player)
-	end
-	
-	player.prevkeys = player.cmd.buttons
-	
-	if player.ntoppv2_3dish then
-		player.mo.frame = $|FF_PAPERSPRITE
-	end
-	
-	if (player.pvars.forcedstate 
-	and player.mo.state ~= player.pvars.forcedstate
-	and (
-		(not (states[player.mo.state].frame & FF_SPR2ENDSTATE) and
-		states[player.mo.state].nextstate ~= player.pvars.forcedstate
-	)
-	or (
-		states[player.mo.state].frame & FF_SPR2ENDSTATE
-		and states[player.mo.state].var1 ~= player.pvars.forcedstate
-	))) then
-	//phew, thats alotta checks
-		player.mo.state = player.pvars.forcedstate // useful to force animations
-	end
-end)
-
-addHook('ThinkFrame', function()
-	for player in players.iterate do
-		if not (player.mo and isPTSkin(player.mo.skin)) then
-			if (player.fsm or player.pvars or player.laststate or player.curstate or player.prevkeys) then
-				player.fsm = nil
-				if player.pvars and player.pvars.ntoppv2_grabbed then
-					if player.pvars.ntoppv2_grabbed.valid and player.pvars.ntoppv2_grabbed.type ~= MT_PLAYER then
-						player.pvars.ntoppv2_grabbed.ntoppv2_grabbed = nil
-						player.pvars.ntoppv2_grabbed = nil
-					end
-				end
-				if player.mo and player.ntoppv2_3dish then
-					player.mo.frame = $ & ~FF_PAPERSPRITE
-					player.ntoppv2_3dish = false
-				end
-				player.pvars = nil
-				player.laststate = nil
-				player.curstate = nil
-				player.prevkeys = nil
-			end
-			continue
-		end
-		if (player.fsm == nil) then
-			fsm.Init(player)
-		end
-		if not (player.pvars) then
-			player.pvars = NTOPP_Init()
-		end
-
-		if (player.curstate ~= player.mo.state) then
-			player.laststate = player.curstate
-			player.curstate = player.mo.state
-		end
-
-		if player.ntoppv2_gravitydisabled and P_IsObjectOnGround(player.mo) then
-			player.ntoppv2_gravitydisabled = false
-		end
-		if player.ntoppv2_diagonalspring and P_IsObjectOnGround(player.mo) then
-			player.ntoppv2_diagonalspring = false
-		end
-		if player.pvars.jumpheight ~= nil and P_IsObjectOnGround(player.mo) then
-			player.pvars.jumpheight = nil
-		end
-		if player.mo.skin == "nthe_noise" and not player.pvars.cancrusher and P_IsObjectOnGround(player.mo) then
-			player.pvars.cancrusher = true
-		end
-		local state = fsm.getState(player.mo.skin, player.fsm.state)
-
-		if (state
-		and state.think) then
-			state:think(player)
-		end
-	end
-end)
 
 addHook('PostThinkFrame', function()
 	for player in players.iterate do
@@ -287,16 +180,6 @@ addHook('PlayerCanEnterSpinGaps', function(player)
 	return true
 end)
 
-local function CanGrabPlayer(player)
-	if player.grabbed then return false end
-	if player.pvars and player.pvars.ntoppv2_grabbed and player.pvars.ntoppv2_grabbed.valid then return false end
-	if player.ntoppv2_grabable == nil then
-		return (CV_FindVar('friendlyfire').value)
-	else
-		return (player.ntoppv2_grabable)
-	end
-end
-
 --[[addHook('MobjMoveBlocked', function(mo)
 	if not (mo.valid) then return end
 	if not (mo.ntoppv2_deathcollide) then return end
@@ -310,8 +193,9 @@ addHook('MobjSpawn', function(mo)
 	mo.killed = false
 end, MT_NTOPP_GRABBED)
 
-
 addHook('MobjThinker', function(mo)
+	if not mo.valid then return end
+
 	if mo.target
 	and mo.target.valid 
 	and not mo.killed then
@@ -324,7 +208,8 @@ addHook('MobjThinker', function(mo)
 		mo.momy = mo.target.momy
 		mo.momz = mo.target.momz
 	end
-	if mo.tracer then
+	if mo.tracer
+	and mo.tracer.valid then
 		mo.state = mo.tracer.state
 		mo.sprite = mo.tracer.sprite
 		mo.frame = mo.tracer.frame
@@ -360,205 +245,23 @@ addHook('MobjDeath', function(mo)
 		mo.tracer.flags2 = mo.savedflags2
 		mo.tracer.eflags = mo.savedeflags
 		P_SetOrigin(mo.tracer, mo.x, mo.y, mo.z)
-		P_KillMobj(mo.tracer, mo.target, mo.target)
+		if mo.killed then
+			P_KillMobj(mo.tracer, mo.target, mo.target)
+		else
+			mo.tracer.ngrab = nil
+		end
 	end
 end, MT_NTOPP_GRABBED)
-
-// MAKING SPRINGS ACT AS BOOSTER PADS
-local horizontal_springs = {
-	MT_YELLOWDIAG,
-	MT_REDDIAG,
-	MT_BLUEDIAG,
-	MT_YELLOWHORIZ,
-	MT_REDHORIZ,
-	MT_BLUEHORIZ,
-	MT_YELLOWBOOSTER,
-	MT_REDBOOSTER
-}
-
-
-addHook('MobjMoveCollide', function(mo, mobj)
-	local player = mo.player
-	if (not player.mo) then return end
-	if not (mobj) then return end
-	if (not isPTSkin(player.mo.skin)) then return end
-	if (not player.fsm) then return end
-	if (not player.pvars) then return end
-	if (not mobj.valid) then return end
-	
-	if (mo.z > mobj.z+mobj.height) then return end
-	if (mobj.z > mo.z+mo.height) then return end
-	
-	local is_spring = false
-	
-	for _,i in pairs(horizontal_springs) do
-		if mobj.type == i then
-			is_spring = true
-			break
-		end
-	end
-	
-	if (is_spring) then
-		player.pvars.drawangle = mobj.angle
-		player.pvars.thrustangle = mobj.angle
-		player.drawangle = mobj.angle
-		if not (mobj.type == MT_YELLOWDIAG or mobj.type == MT_REDDIAG or mobj.type == MT_BLUEDIAG) then
-			if (player.pvars.movespeed < ntopp_v2.machs[3]
-			and player.fsm.state ~= ntopp_v2.enums.SWINGDING) then
-				player.pvars.movespeed = ntopp_v2.machs[3]
-				if (player.fsm.state ~= ntopp_v2.enums.MACH3) then
-					fsm.ChangeState(player, ntopp_v2.enums.MACH3)
-				end
-			else
-				player.pvars.movespeed = $+(2*FU)
-			end
-			S_StartSound(mo, sfx_dshpad)
-			player.pvars.dashpad = true
-		else
-			if (player.fsm.state == ntopp_v2.enums.BODYSLAM or player.fsm.state == ntopp_v2.enums.PILEDRIVER) then
-				player.pvars.hassprung = true
-			end
-			player.ntoppv2_gravitydisabled = true
-			fsm.ChangeState(player, ntopp_v2.enums.BASE)
-			player.pvars.movespeed = ntopp_v2.machs[1]
-			player.ntoppv2_diagonalspring = true
-		end
-	elseif mobj.flags & MF_SPRING then
-		if (player.fsm.state == ntopp_v2.enums.BODYSLAM or player.fsm.state == ntopp_v2.enums.PILEDRIVER) then
-			player.pvars.hassprung = true
-		end
-		player.ntoppv2_gravitydisabled = true
-	end
-	
-	if (mobj.type == MT_SPIKE or mobj.type == MT_WALLSPIKE) and (player.fsm.state == ntopp_v2.enums.MACH2 or player.fsm.state == ntopp_v2.enums.MACH3) then
-		P_KillMobj(mobj, mo, mo)
-	end
-end, MT_PLAYER)
-
-local function CanGrabPlayer(player)
-	if player.grabbed then return false end
-	if player.pvars and player.pvars.ntoppv2_grabbed and player.pvars.ntoppv2_grabbed.valid then return false end
-	if player.ntoppv2_grabable == nil then
-		return (CV_FindVar('friendlyfire').value)
-	else
-		return (player.ntoppv2_grabable)
-	end
-end
-
-addHook('MobjMoveCollide', function(mo, mobj)
-	if (not mo.player) then return end
-	local player = mo.player
-	if (not player.mo) then return end
-	if not (mobj.valid) then return end
-	if (not isPTSkin(player.mo.skin)) then return end
-	if (not player.fsm) then return end
-	if (not player.pvars) then return end
-	
-	if (mo.z > mobj.z+mobj.height) then return end
-	if (mobj.z > mo.z+mo.height) then return end
-	
-	if (player.fsm.state ~= ntopp_v2.enums.GRAB)
-	or player.mo.skin == "ngustavo" then return end
-	if (mobj.flags & MF_ENEMY) then
-		if not (player.pvars.ntoppv2_grabbed and player.pvars.ntoppv2_grabbed.valid and not player.pvars.ntoppv2_grabbed.ntoppv2_deathcollide) then
-			player.pvars.ntoppv2_grabbed = mobj
-			mobj.ntoppv2_grabbed = player.mo
-			return false
-		end
-	--[[elseif (mobj.type == MT_PLAYER and CanGrabPlayer(mobj.player)) then
-		if not (player.pvars.grabbedenemy and player.pvars.grabbedenemy.valid and not player.pvars.grabbedenemy.killed) then
-			if mobj.player.pvars and mobj.player.pvars.grabbedenemy and mobj.player.pvars.grabbedenemy.valid and mobj.player.pvars.grabbedenemy.type == MT_PLAYER then
-				mobj.player.pvars.grabbedenemy.player.powers[pw_carry] = 0
-				mobj.player.pvars.grabbedenemy.player.grabbed = false
-			end
-			mobj.player.powers[pw_carry] = CR_PLAYER
-			mobj.player.grabbed = true
-			player.pvars.grabbedenemy = mobj
-			return false
-		end
-		
-		WILL RETURN SOON]]
-	end
-end, MT_PLAYER)
-
-addHook('MobjMoveCollide', function(mo, mobj)
-	if (not mo.player) then return end
-	local player = mo.player
-	if (not player.mo) then return end
-	if not (mobj.valid) then return end
-	if (not isPTSkin(player.mo.skin)) then return end
-	if (not player.fsm) then return end
-	if (not player.pvars) then return end
-	
-	if (mo.z > mobj.z+mobj.height) then return end
-	if (mobj.z > mo.z+mo.height) then return end
-	
-	if (player.fsm.state ~= ntopp_v2.enums.GRAB)
-	or player.mo.skin == "ngustavo" then return end
-	
-	if (mobj.flags & MF_ENEMY) then return end
-	if not (mobj.flags & MF_BOSS or mobj.flags & MF_MONITOR) then return end
-	
-	
-end, MT_PLAYER)
-
-addHook('MobjMoveBlocked', function(mo)
-	if not (mo.valid) then return end
-	if not (mo.ntoppv2_deathcollide) then return end
-	local src = mo.ntoppv2_deathcollide.valid and mo.ntoppv2_deathcollide or nil
-	P_KillMobj(mo, src, src)
-	mo.ntoppv2_deathcollide = nil
-end)
-
-addHook('MobjMoveBlocked', function(mo, mobj, line)
-	
-	local player = mo.player
-	if not player.mo then return end
-	
-	if not player.fsm then return end
-	if not player.pvars then return end
-	
-	if not line then return end
-	
-	
-	if player.fsm.state ~= ntopp_v2.enums.MACH1 
-	and player.fsm.state ~= ntopp_v2.enums.MACH2 
-	and player.fsm.state ~= ntopp_v2.enums.MACH3
-	and (player.fsm.state ~= ntopp_v2.enums.GRAB or player.mo.skin == "ngustavo")
-	and player.fsm.state ~= ntopp_v2.enums.LONGJUMP
-	and player.fsm.state ~= ntopp_v2.enums.DIVE
-	and player.fsm.state ~= ntopp_v2.enums.SKID
-	and player.fsm.state ~= ntopp_v2.enums.ROLL
-	then return end
-	
-	if player.mo.skin == "nthe_noise" and player.fsm.state == ntopp_v2.enums.DIVE then
-		return
-	end
-	
-	if player.mo.skin == "ngustavo" then
-		if player.fsm.state == ntopp_v2.enums.DIVE or player.fsm.state == ntoppv2.enums.BELLYSLIDE then
-			return
-		end
-	end
-	
-	if (not P_IsObjectOnGround(mo) and not (player.fsm.state == ntopp_v2.enums.DIVE or player.fsm.state == ntopp_v2.enums.SKID))
-	or (P_IsObjectOnGround(mo) and player.mo.standingslope and not (line and line.flags & ML_NOCLIMB)) 
-	then return end
-	
-	local linex,liney = P_ClosestPointOnLine(player.mo.x,player.mo.y,line)
-	local lineangle = R_PointToAngle2(player.mo.x,player.mo.y,linex,liney)
-	local diff = player.mo.angle - lineangle
-	
-	if diff <= ANG1*35 and diff >= -ANG1*35 then
-		fsm.ChangeState(player, ntopp_v2.enums.STUN)
-	end
-end, MT_PLAYER)
 
 addHook('MusicChange', function(old, new)
 	if not (consoleplayer and consoleplayer.valid) return end
 	
+	if (old == "PBSBEA" or old == "NBSBEA") and (new == "_clear" or new == "_CLEAR") then
+		return true
+	end
+	
 	if new == mapmusname and consoleplayer.ntoppv2_boogie then return 'MVITBY' end
-	if consoleplayer and ((gamestate == GS_LEVEL and consoleplayer.mo and consoleplayer.mo.skin == "nthe_noise")
+	if ((gamestate == GS_LEVEL and consoleplayer.mo and consoleplayer.mo.skin == "nthe_noise")
 	or (consoleplayer.skin == "nthe_noise")) then
 		local music = {
 			['PIZTIM'] = "NOISL1",
@@ -573,8 +276,20 @@ addHook('MusicChange', function(old, new)
 	end
 end)
 
+addHook("MusicChange", function(old, new)
+	if gamestate ~= GS_LEVEL then return end
+
+	if not NTOPP_Check(consoleplayer) then return end
+
+	if new:lower() ~= "cezr" then return end
+	if old == "PCEZR" then return true end
+
+	return "PCEZR"
+end)
+
 addHook('PlayerMsg', function(player, type, target, msg)
 	if type ~= 0 then return end
+	if gamestate ~= GS_LEVEL then return end
 	
 	if not player.mo then return end
 	if not isPTSkin(player.mo.skin) then return end
@@ -585,142 +300,6 @@ addHook('PlayerMsg', function(player, type, target, msg)
 		S_ChangeMusic('MVITBY', true, player)
 		player.ntoppv2_boogie = true
 		return true
-	end
-end)
-
-addHook('MobjMoveBlocked', function(mo, mobj, line)
-	local player = mo.player
-	if not player.mo then return end
-	if not isPTSkin(player.mo.skin) then return end
-	if not player.fsm then return end
-	if not player.pvars then return end
-	
-	if line and line.flags & ML_NOCLIMB then return end
-	
-	if player.fsm.state ~= ntopp_v2.enums.MACH1 
-	and player.fsm.state ~= ntopp_v2.enums.MACH2 
-	and player.fsm.state ~= ntopp_v2.enums.MACH3
-	and (player.fsm.state ~= ntopp_v2.enums.GRAB or player.mo.skin == "ngustavo")
-	and player.fsm.state ~= ntopp_v2.enums.LONGJUMP
-	and player.fsm.state ~= ntopp_v2.enums.BREAKDANCELAUNCH
-	then return end
-	
-	if P_IsObjectOnGround(mo) and not player.mo.standingslope then return end
-	if P_PlayerInPain(player) or player.playerstate == PST_DEAD then return end
-	
-	local wallfound = false
-	
-	player.pvars.mobjblocked = mobj
-	wallfound = (WallCheckHelper(player, line))
-	
-	if not wallfound then return end
-	
-	local angle = 0
-	if line then
-		local linex,liney = P_ClosestPointOnLine(player.mo.x,player.mo.y,line)
-		angle = R_PointToAngle2(player.mo.x,player.mo.y,linex,liney)
-	end
-	if mobj then
-		angle = R_PointToAngle2(player.mo.x, player.mo.y, mobj.x, mobj.y)
-	end
-	local diff = player.mo.angle - angle
-	if diff <= ANG1*35 and diff >= -ANG1*35 then
-		fsm.ChangeState(player, ntopp_v2.enums.WALLCLIMB)
-		player.pvars.drawangle = angle
-	end
-end, MT_PLAYER)
-
-addHook('JumpSpecial', function(player)
-	if not player.mo then return end
-	if not isPTSkin(player.mo.skin) then return end
-	if not player.fsm then return end
-	if not P_IsObjectOnGround(player.mo) then return end
-	if player.pflags & PF_JUMPDOWN then return end
-	if player.pflags & PF_JUMPSTASIS then return end
-	
-	local p = player
-	local me = p.mo //luigi budd is lazy
-	
-	if player.fsm.state == ntopp_v2.enums.MACH1 
-	or player.fsm.state == ntopp_v2.enums.MACH2
-	or player.fsm.state == ntopp_v2.enums.MACH3
-	or player.fsm.state == ntopp_v2.enums.GRAB then
-		local dist = -40
-		local d1 = P_SpawnMobjFromMobj(me, dist*cos(p.drawangle + ANGLE_45), dist*sin(p.drawangle + ANGLE_45), 0, MT_LINEPARTICLE)
-		local d2 = P_SpawnMobjFromMobj(me, dist*cos(p.drawangle - ANGLE_45), dist*sin(p.drawangle - ANGLE_45), 0, MT_LINEPARTICLE)
-		d1.angle = R_PointToAngle2(d1.x, d1.y, me.x+me.momx, me.y+me.momy) --- ANG5
-		d2.angle = R_PointToAngle2(d2.x, d2.y, me.x+me.momx, me.y+me.momy) --- ANG5
-		d1.state = S_PJUMPDUST
-		d2.state = S_PJUMPDUST
-	else
-		local dust = P_SpawnMobjFromMobj(me, 0,0,0, MT_LINEPARTICLE)
-		dust.state = S_PSTNDJUMPDUST
-	end
-end)
-
-local function CheckHeight(player)
-	if not (player.mo) then return end
-	if (not isPTSkin(player.mo.skin)) then return end
-	if not (player.fsm) then return end
-	if not (player.pvars) then return end
-	
-	if player.fsm.state == ntopp_v2.enums.CROUCH then
-		return P_GetPlayerSpinHeight(player)
-	end
-end
-
-addHook("PlayerHeight", CheckHeight)
-addHook("PlayerCanEnterSpinGaps", CheckHeight)
-
-addHook("PlayerCanEnterSpinGaps", function(player)
-	
-	
-	return true
-end)
-
-addHook('PreThinkFrame', do
-	for player in players.iterate do
-		if not (player.mo) then continue end
-		if not (player.cmd) then continue end
-		if (not isPTSkin(player.mo.skin)) then continue end
-		if not (player.fsm) then continue end
-		if not (player.pvars) then continue end
-		if (player.fsm.state == ntopp_v2.enums.MACH3 
-		or player.fsm.state == ntopp_v2.enums.MACH2) then
-			if (P_GetPlayerControlDirection(player) == 2 
-			and P_IsObjectOnGround(player.mo))
-			and not player.powers[pw_justsprung] then
-				fsm.ChangeState(player, ntopp_v2.enums.DRIFT)
-			end
-			
-			if player.powers[pw_justsprung] then
-				player.pvars.drawangle = player.drawangle
-				player.pvars.thrustangle = player.drawangle
-			end
-		end
-		
-		if (player.fsm.state == ntopp_v2.enums.GRAB)
-		and player.mo.skin ~= "ngustavo" then
-			if (P_GetPlayerControlDirection(player) == 2) then
-				player.pvars.cancelledgrab = true
-				fsm.ChangeState(player, ntopp_v2.enums.BASE)
-				player.pvars.movespeed = ntopp_v2.machs[1]
-				if not P_IsObjectOnGround(player.mo)
-					player.mo.state = S_PEPPINO_SUPLEXDASHCNCL
-					player.mo.frame = A|FF_SPR2ENDSTATE
-				end
-			end
-		end
-		
-		if player.pflags & PF_SPINNING and player.fsm.state ~= ntopp_v2.enums.ROLL then
-			fsm.ChangeState(player, ntopp_v2.enums.BASE)
-			player.pvars.movespeed = ntopp_v2.machs[1]
-		end
-
-		if ((player.powers[pw_carry] or player.pflags & PF_SLIDING or player.mo.state == S_PLAY_STUN) and player.fsm.state ~= ntopp_v2.enums.BASE) then
-			fsm.ChangeState(player, ntopp_v2.enums.BASE)
-			player.pvars.movespeed = ntopp_v2.machs[1]
-		end
 	end
 end)
 
@@ -761,7 +340,7 @@ addHook('MobjDamage', function(target, inf, source, _, dmg)
     if not isPTSkin(target.skin) then return end
     if P_PlayerInPain(target.player) then return end
 	if dmg == DMG_FIRE and not (dmg & DMG_DEATHMASK) return end
-	S_StartSound(target.player.mo, sfx_owmyas)
+	
 	doPain(target.player)
 end, MT_PLAYER)
 
@@ -786,19 +365,17 @@ addHook('ShouldDamage', function(target, inflictor, source, _, dmg)
 	
 	if not isPTSkin(player.mo.skin) then return end
 	if not (inflictor and inflictor.valid) then return end
+	if inflictor.ngrab then return false end
 
 	if player.fsm and player.fsm.state == ntopp_v2.enums.GRAB and target.skin ~= "ngustavo" then
 		return false
 	end
 	if player.fsm and player.fsm.state == ntopp_v2.enums.TAUNT and (dmg ~= DMG_FIRE or mapheaderinfo[gamemap].bonustype == 1) then
-		local mobj = inflictor
-
-		if (inflictor ~= source or mobj.flags & MF_MISSILE)
-		and mobj.type ~= MT_EGGMOBILE2_POGO then
-			mobj.target = target
-			mobj.momx = -$
-			mobj.momy = -$
-			mobj.momz = -$
+		if (inflictor.flags & MF_MISSILE) then
+			inflictor.target = target
+			inflictor.momx = -$
+			inflictor.momy = -$
+			inflictor.momz = -$
 		else
 			P_DamageMobj(inflictor, target, target)
 		end
@@ -806,12 +383,6 @@ addHook('ShouldDamage', function(target, inflictor, source, _, dmg)
 		return false
 	end
 	if player.fsm and (player.fsm.state == ntopp_v2.enums.PARRY) then
-		return false
-	end
-
-	if inflictor.ntoppv2_stunned
-	or inflictor.ntoppv2_nodamagetime
-	or inflictor.ntoppv2_grabbed then
 		return false
 	end
 end)
@@ -842,64 +413,6 @@ addHook('ShouldDamage', function(target,inf,source)
 	then
 		return false
 	end
-end)
-
-local function grabbed_THINKER(mo)
-	if not mo.ntoppv2_grabbed then return end
-	mo.ntoppv2_stunned = TICRATE*5
-	
-	if not mo.ntoppv2_grabbed.valid then
-		mo.ntoppv2_grabbed.player.pvars.ntoppv2_grabbed = nil
-		mo.ntoppv2_grabbed = nil
-		return
-	end
-	if mo.ntoppv2_grabbed.player.pvars.ntoppv2_grabbed ~= mo then
-		mo.ntoppv2_grabbed = nil
-		return
-	end
-
-	local pmo = mo.ntoppv2_grabbed
-
-	mo.momx = pmo.momx
-	mo.momy = pmo.momy
-	mo.momz = pmo.momz
-	
-	local p = pmo.player -- pacola thing to prevent stuff oooo
-	if p.fsm and (p.fsm.state ~= ntopp_v2.enums.BASE_GRABBEDENEMY and p.fsm.state ~= ntopp_v2.enums.GRAB_KILLENEMY and p.fsm.state ~= ntopp_v2.enums.PILEDRIVER)
-		mo.ntoppv2_grabbed.player.pvars.ntoppv2_grabbed = nil
-		mo.ntoppv2_grabbed = nil
-		return
-	end
-	-- no more pacola thing to prevent stuff oooo
-	
-	--mo.flags = $1|MF_NOCLIPTHING
-	P_MoveOrigin(mo, pmo.x-pmo.momx, pmo.y-pmo.momy, pmo.z-pmo.momz+pmo.height+FU/4)
-end
-
-local function stunned_THINKER(mo)
-	if not (mo.ntoppv2_stunned) then return end
-
-	mo.ntoppv2_stunned = $-1
-end
-
-local function deathcollide_THINKER(mo)
-	if not (mo.ntoppv2_deathcollide) then return end
-	
-	mo.ntoppv2_stunned = 5*TICRATE
-
-	if mo.z <= mo.floorz or mo.z+mo.height >= mo.ceilingz then
-		local src = mo.ntoppv2_deathcollide.valid and mo.ntoppv2_deathcollide or nil
-		P_KillMobj(mo, src, src)
-		mo.ntoppv2_deathcollide = nil
-	end
-end
-
-addHook('MobjThinker', function(mo)
-	if not mo.valid then return end
-	if not (mo.flags & MF_ENEMY) then return end
-	grabbed_THINKER(mo)
-	stunned_THINKER(mo)
-	deathcollide_THINKER(mo)
 end)
 
 addHook('MobjThinker', function(mo)
@@ -1184,11 +697,12 @@ addHook('ThinkFrame', do
 		sound_checks[S_PEPPINO_SECONDJUMP] = sound_checks[S_PEPPINO_MACH1]
 		--sound_checks[S_PEPPINO_SECONDJUMP] = (player.fsm.state == ntopp_v2.enums.MACH1 and sound_checks[S_PEPPINO_MACH1]) or (player.fsm.state == ntopp_v2.enums.MACH2 and sound_checks[S_PEPPINO_MACH2]) or nil
 		sound_checks[S_NOISE_SPIN] = sound_checks[S_PEPPINO_MACH2]
-		sound_checks[S_NOISE_SPIN] = {sfx_naspin, function() return not player.pvars.soundtime end}
+		sound_checks[S_NOISE_SPIN] = {sfx_naspin, function() return true end}
 		
 		if player.mo.skin == "nthe_noise"
-			sound_checks[S_PEPPINO_WALLCLIMB] = {sfx_nmclop, function() return not S_SoundPlaying(player.mo, sfx_nmccnc) end}
-			sound_checks[S_PEPPINO_DIVEBOMB] = {sfx_ntrnd, function() return not player.pvars.soundtime end}
+			sound_checks[S_PEPPINO_WALLCLIMB] = {sfx_nmclop, function() return true end}
+			sound_checks[S_PEPPINO_DIVEBOMB] = {sfx_ntrnd, function() return true end}
+			sound_checks[S_NOISE_DRILLAIR] = sound_checks[S_PEPPINO_DIVEBOMB]
 			sound_checks[S_PEPPINO_SECONDJUMP] = sound_checks[S_PEPPINO_MACH2]
 		end
 		
@@ -1197,6 +711,7 @@ addHook('ThinkFrame', do
 		local msfxv = player.pvars.forcedstate and sound_checks[player.pvars.forcedstate] and sound_checks[player.pvars.forcedstate][3]
 		if player.mo.state == S_PEPPINO_SECONDJUMP -- nick please nick, please teigjpfdlkmdd
 		and player.mo.skin == "nthe_noise" -- i hate hardcoding these kind of things, but nick's code is being hard to work with when it comes to S_PEPPINO_SECONDJUMP
+		-- IM SORRY ILL REWORK THIS :sob:
 			sound = sound_checks[S_PEPPINO_MACH1][1]
 			can = sound_checks[S_PEPPINO_MACH1][2]()
 			msfxv = sound_checks[S_PEPPINO_MACH1][3]
@@ -1262,11 +777,8 @@ end)
 
 addHook("ThinkFrame", function() -- pacola wuz here
 	for p in players.iterate do
-		if not p.mo
-		or not isPTSkin(p.mo.skin)
-		or not p.fsm
-		or not p.pvars continue end -- haha i just copied the stuff from above
-		
+		if not NTOPP_Check(p) then continue end
+
 		if (p.pflags & PF_SLIDING)
 		and p.mo.state == S_PLAY_PAIN
 			p.mo.state = S_PEPPINO_WATERSLIDE
@@ -1357,9 +869,9 @@ end)
 -- gustavo thing
 
 local function nskincheck(p)
-if p and p.mo and p.valid and p.mo.valid
-	if p.mo.skin ~= "nthe_noise"
-	and p.ntoppv2_skinmo
+	if p.mo
+	and p.mo.skin ~= "nthe_noise"
+	and p.ntoppv2_skinmo then
 		local s = p.ntoppv2_skinmo
 		if (s and s.valid)
 			P_RemoveMobj(s)
@@ -1367,41 +879,34 @@ if p and p.mo and p.valid and p.mo.valid
 		p.ntoppv2_skinmo = nil
 	end	
 end
-end
 
 local function soupflagcheck(p)
-if p and p.valid and p.mo and p.mo.valid
 	if p.ntoppv2_soupflagsapplied
 		p.mo.eflags = $ & ~(MFE_FORCESUPER|MFE_FORCENOSUPER)
 		p.ntoppv2_soupflagsapplied = false
-	end
 	end
 end
 
 addHook("ThinkFrame", function() -- this doesnt even work properly :sob: (future pacola here, what did i mean with this)
 	for p in players.iterate do
-		if not p.mo
-		or not isPTSkin(p.mo.skin) -- only here just i can do the noise stuff here
-		or not p.fsm
-		or not p.pvars
+		if not NTOPP_Check(p) then
 			nskincheck(p)
 			soupflagcheck(p)
 			continue
 		end -- haha i just copied the stuff from above (again)
-		
 		nskincheck(p)
-		
+
 		if p.mo.skin ~= "nthe_noise"
-		and p.mo.skin ~= "ngustavo"
+		and p.mo.skin ~= "ngustavo" then
 			soupflagcheck(p)
 			continue
 		end
-		
-		if p.mo.skin == "nthe_noise"
+	
+		if p.mo.skin == "nthe_noise" then
 			p.mo.eflags = ($1|MFE_FORCENOSUPER) & ~MFE_FORCESUPER
 			p.ntoppv2_soupflagsapplied = true
 			
-			if not (p.ntoppv2_skinmo and p.ntoppv2_skinmo.valid)
+			if not (p.ntoppv2_skinmo and p.ntoppv2_skinmo.valid) then
 				p.ntoppv2_skinmo = P_SpawnMobj(p.mo.x, p.mo.y, p.mo.z, MT_NOISE_OVERLAY)
 				local s = p.ntoppv2_skinmo
 				s.skin = p.mo.skin
@@ -1417,6 +922,7 @@ addHook("ThinkFrame", function() -- this doesnt even work properly :sob: (future
 				mo.sprite2 = pmo.sprite2|FF_SPR2SUPER
 				mo.frame = pmo.frame
 				mo.tics = pmo.tics
+				mo.scale = pmo.scale
 				mo.anim_duration = pmo.anim_duration
 				mo.dispoffset = pmo.dispoffset+1
 				
@@ -1427,14 +933,14 @@ addHook("ThinkFrame", function() -- this doesnt even work properly :sob: (future
 				mo.color = NoiseSkincolor[p.skincolor] or SKINCOLOR_FLESHEATER
 			end
 		end
-		
-		if p.mo.skin ~= "ngustavo" continue end
-		
-		if p.ntoppv2_hasbrick
-			p.mo.eflags = ($1|MFE_FORCENOSUPER) & ~MFE_FORCESUPER
-		else
-			p.mo.eflags = ($1|MFE_FORCESUPER) & ~MFE_FORCENOSUPER
-		end
-		p.ntoppv2_soupflagsapplied = true
+			
+			if p.mo.skin ~= "ngustavo" continue end
+			
+			if p.ntoppv2_hasbrick
+				p.mo.eflags = ($1|MFE_FORCENOSUPER) & ~MFE_FORCESUPER
+			else
+				p.mo.eflags = ($1|MFE_FORCESUPER) & ~MFE_FORCENOSUPER
+			end
+			p.ntoppv2_soupflagsapplied = true
 	end
 end)

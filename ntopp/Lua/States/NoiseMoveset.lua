@@ -8,7 +8,7 @@ end
 
 fsmstates[ntopp_v2.enums.WALLCLIMB]['nthe_noise'] = {
 	enter = function(self, player, state)
-		player.pflags = $|PF_JUMPED
+		player.pflags = $|PF_JUMPED & ~PF_STARTJUMP
 		player.ntoppjump = false
 		
 		if player.pvars.cancrusher == nil then
@@ -24,46 +24,46 @@ fsmstates[ntopp_v2.enums.WALLCLIMB]['nthe_noise'] = {
 			L_ZLaunch(player.mo, 8*player.jumpfactor)
 			player.mo.momx = $/2
 			player.mo.momy = $/2
-		else
+			S_StartSound(player.mo, sfx_nmccnc)
+		elseif state ~= ntopp_v2.enums.TAUNT then
 			--if player.pvars.jumpheight > 0 then
 				L_ZLaunch(player.mo, player.pvars.jumpheight)
+				S_StartSound(player.mo, sfx_nmccnc)
 			--end
 		end
 		
 		player.pvars.forcedstate = S_PEPPINO_WALLCLIMB
-		//from effects but idfk -rbf
-	local fxfive = P_SpawnMobjFromMobj(player.mo, 0, 0, 0, MT_THOK)
-	fxfive.tics = 35
-    fxfive.state = S_NBONKEFFECT
-	fxfive.color = player.skincolor
-	//
-		S_StartSound(player.mo, sfx_nmccnc)
 	end,
 	playerthink = function(self, player)
-		if PT_FindPressed(player, "down", player.cmd.buttons) then
+		if player.cmd.buttons & BT_CUSTOM2 then
 			fsm.ChangeState(player, ntopp_v2.enums.DIVE)
 			return
 		end
-		if (PT_FindPressed(player, "up", player.cmd.buttons))
-		and (PT_FindPressed(player, "atk", player.cmd.buttons) and not (PT_FindPressed(player, "atk", player.prevkeys))) then
+		if (player.cmd.buttons & BT_CUSTOM3)
+		and (player.cmd.buttons & BT_CUSTOM1 and not (player.pvars.prevkeys & BT_CUSTOM1)) then
 			fsm.ChangeState(player, ntopp_v2.enums.UPPERCUT)
 			return
 		end
-		if PT_FindPressed(player, "atk", player.cmd.buttons)
-		and not (PT_FindPressed(player, "atk", player.prevkeys)) then
+		if player.cmd.buttons & BT_CUSTOM1
+		and not (player.pvars.prevkeys & BT_CUSTOM1) then
 			player.pvars.movespeed = ntopp_v2.machs[3]
+			player.drawangle = NTOPP_ReturnControlsAngle(player)
 			fsm.ChangeState(player, ntopp_v2.enums.MACH2)
 			player.pvars.forcedstate = S_NOISE_SPIN
-			L_ZLaunch(player.mo, 4*FU)
+			L_ZLaunch(player.mo, max(player.mo.momz, 4*FU))
 			return
 		end
-		if (PT_FindPressed(player, "up", player.cmd.buttons))
-		and ((player.cmd.buttons & BT_JUMP) and not (player.prevkeys & BT_JUMP)) 
+		if (player.cmd.buttons & BT_CUSTOM3)
+		and ((player.cmd.buttons & BT_JUMP) and not (player.pvars.prevkeys & BT_JUMP)) 
 		and player.pvars.cancrusher then
 			fsm.ChangeState(player, ntopp_v2.enums.BODYSLAM)
 			L_ZLaunch(player.mo, 40*FU)
 			player.pvars.savedmomz = player.mo.momz
 			player.pvars.forcedstate = S_NOISE_CRUSHER
+		end
+		if (player.cmd.buttons & BT_TOSSFLAG) and not (player.pvars.prevkeys and player.pvars.prevkeys & BT_TOSSFLAG) then
+			fsm.ChangeState(player, ntopp_v2.enums.TAUNT)
+			return
 		end
 		
 		if not (leveltime % 4)
@@ -72,7 +72,8 @@ fsmstates[ntopp_v2.enums.WALLCLIMB]['nthe_noise'] = {
 	end,
 	think = function(self, player)
 		if P_IsObjectOnGround(player.mo) then
-			if (PT_FindPressed(player, "run", player.cmd.buttons)) then
+			if (player.cmd.buttons & BT_SPIN) then
+				player.drawangle = NTOPP_ReturnControlsAngle(player)
 				player.pvars.movespeed = ntopp_v2.machs[3]
 				fsm.ChangeState(player, ntopp_v2.enums.MACH3)
 				S_StartSound(player.mo, sfx_nmclnd)
@@ -87,12 +88,12 @@ fsmstates[ntopp_v2.enums.WALLCLIMB]['nthe_noise'] = {
 fsmstates[ntopp_v2.enums.DIVE]['nthe_noise'] = {
 	enter = function(self, player, state)
 		fsmstates[ntopp_v2.enums.DIVE]['npeppino']:enter(player)
-		
+		L_ZLaunch(player.mo, -32*FU)
+
 		player.pvars.forcedstate = S_PEPPINO_DIVEBOMB
 		if player.pvars.movespeed >= ntopp_v2.machs[3] then
 			player.normalspeed = player.pvars.movespeed
 		end
-		
 		
 		if player.pvars.cancrusher == nil then
 			player.pvars.cancrusher = true
@@ -109,32 +110,43 @@ fsmstates[ntopp_v2.enums.DIVE]['nthe_noise'] = {
 			player.pvars.forcedstate = S_PEPPINO_DIVEBOMB
 		end
 		
-		player.pflags = $|PF_JUMPSTASIS
-		player.powers[pw_strong] = $1|STR_ATTACK|STR_SPIKE|STR_ANIM
-		if (PT_FindPressed(player, "atk", player.cmd.buttons))
-		and not (PT_FindPressed(player, "atk", player.prevkeys)) then -- look nick you can do it in this state dummy.............
+		if (player.cmd.buttons & BT_CUSTOM1)
+		and not (player.pvars.prevkeys & BT_CUSTOM1) then -- look nick you can do it in this state dummy.............
 			player.pvars.movespeed = ntopp_v2.machs[3]
+			player.drawangle = NTOPP_ReturnControlsAngle(player)
 			fsm.ChangeState(player, ntopp_v2.enums.MACH2)
 			player.pvars.forcedstate = S_NOISE_SPIN
-			if not P_IsObjectOnGround(player.mo)
+			if not P_IsObjectOnGround(player.mo) -- but theres a grounded check and we cant do that in playerthinknor else itll be 1 tic off
 				L_ZLaunch(player.mo, 4*FU)
 			end
 			return
 		end
+		
+		player.pflags = $|PF_JUMPSTASIS
+		player.powers[pw_strong] = $1|STR_ATTACK|STR_SPIKE|STR_ANIM
+		if (player.cmd.buttons & BT_TOSSFLAG) and not (player.pvars.prevkeys and player.pvars.prevkeys & BT_TOSSFLAG) then
+			fsm.ChangeState(player, ntopp_v2.enums.TAUNT)
+			return
+		end
 	end,
 	think = function(self, player)
-		if not PT_FindPressed(player, "down", player.cmd.buttons) and P_IsObjectOnGround(player.mo) then
+		if not (player.cmd.buttons & BT_CUSTOM2) and P_IsObjectOnGround(player.mo) then
 			fsm.ChangeState(player, ntopp_v2.enums.WALLCLIMB)
 			L_ZLaunch(player.mo, 6*FU)
 			return
 		end
 		if not P_IsObjectOnGround(player.mo) and player.pvars.groundthing then
-			L_ZLaunch(player.mo, -23*FU)
+			L_ZLaunch(player.mo, -32*FU)
 		end
 		if not P_IsObjectOnGround(player.mo)
-		and (PT_FindPressed(player, "up", player.cmd.buttons))
-		and (PT_FindPressed(player, "atk", player.cmd.buttons) and not (PT_FindPressed(player, "atk", player.prevkeys))) then
+		and (player.cmd.buttons & BT_CUSTOM3)
+		and (player.cmd.buttons & BT_CUSTOM1 and not (player.pvars.prevkeys & BT_CUSTOM1)) then
 			fsm.ChangeState(player, ntopp_v2.enums.UPPERCUT)
+			return
+		end
+		if not P_IsObjectOnGround(player.mo)
+		and (player.cmd.buttons & BT_TOSSFLAG) and not (player.pvars.prevkeys and player.pvars.prevkeys & BT_TOSSFLAG) then
+			fsm.ChangeState(player, ntopp_v2.enums.TAUNT)
 			return
 		end
 		

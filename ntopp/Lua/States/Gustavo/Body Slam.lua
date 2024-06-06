@@ -94,7 +94,8 @@ fsmstates[ntopp_v2.enums.BODYSLAM]['ngustavo'] = {
 					player.pvars.forcedstate = S_PEPPINO_DIVEBOMBEND
 				end
 				if player.pvars.forcedstate ~= S_NOISE_CRUSHEREND
-				and player.mo.standingslope then
+				and player.mo.standingslope 
+				and player.mo.skin ~= "ngustavo" then
 					player.pvars.movespeed = ntopp_v2.machs[1]
 -- 					if player.pvars.savedmomz <= -35*FU then
 -- 						player.pvars.movespeed = ntopp_v2.machs[3]

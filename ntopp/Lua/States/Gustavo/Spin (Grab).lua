@@ -3,6 +3,7 @@
 
 fsmstates[ntopp_v2.enums.GRAB]["ngustavo"] = {
 	name = "Spin Move thing i dont know does nick even use this name thing",
+	-- no i dont it was used originally for the tv lol
 	enter = function(self, player, state)
 		if (player.pvars.movespeed < ntopp_v2.machs[3]-(10*FU)) then
 			player.pvars.movespeed = ntopp_v2.machs[3]-(10*FU)
@@ -38,7 +39,7 @@ fsmstates[ntopp_v2.enums.GRAB]["ngustavo"] = {
 		p.powers[pw_strong] = $1|STR_ATTACK|STR_WALL|STR_ANIM
 		P_InstaThrust(p.mo, pv.thrustangle, pv.movespeed)
 		pv.grabtime = $-1
-		if (pv.grabtime < 0 and (not (PT_FindPressed(p, "atk", p.cmd.buttons)) or pv.gustavohitwall))
+		if (pv.grabtime < 0 and (not (p.cmd.buttons & BT_CUSTOM1) or pv.gustavohitwall))
 			--sprite_index = spr_lonegustavo_walk
 			fsm.ChangeState(player, ntopp_v2.enums.BASE)
 			if (p.speed != 0)

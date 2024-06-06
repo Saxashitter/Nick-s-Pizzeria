@@ -1,9 +1,11 @@
 rawset(_G, "tv", {})
 
+local uia = FixedRound(240*FixedDiv(TICRATE, 60))/FU -- converts the time used in Pizza Tower to TICRATE -Pacola
+
 tv.states = {
 	PEP_ = {
-		Idle = {"IDLE", 14, 2},
-		IdleAnim1 = {"IDA1", 27, 2},
+		Idle = {"IDLE", 14, 2, uia},
+		IdleAnim1 = {"IDA1", 28, 2},
 		IdleAnim2 = {"IDA2", 31, 2},
 		Mach3 = {"MAC3", 3, 2},
 		Mach4 = {"MAC4", 3, 2},
@@ -14,16 +16,17 @@ tv.states = {
 		Fireass = {"FASS", 2, 1}
 	},
 	NOS_ = {
-		Idle = {"IDLE", 3, 2, 14*2},
-		IdleAnim1 = {"IDA1", 22, 2},
-		IdleAnim2 = {"IDA2", 22, 2},
+		Idle = {"IDLE", 3, 2, uia},
+		IdleAnim1 = {"IDA1", 24, 2},
+		IdleAnim2 = {"IDA2", 22, 2, 21*2},
 		Mach3 = {"MAC3", 3, 2},
 		Mach4 = {"MAC4", 3, 2},
 		Panic = {"PANC", 17, 2},
 		Hurt = {"HURT", 6, 2},
 		Combo = {"COMB", 20, 2},
 		Heat = {"HEAT", 8, 2},
-		Fireass = {"FASS", 2, 1}
+		Fireass = {"FASS", 2, 1},
+		SkinColor = true
 	},
 	GUS_ = {
 		Idle = {"IDLE", 14, 2},
@@ -31,6 +34,14 @@ tv.states = {
 		Hurt = {"HURT", 8, 2}
 	}
 }
+
+local function canUseTV(p)
+	if not NTOPP_Check(p)
+	or mapheaderinfo[gamemap].bonustype == 1 then
+		return false
+	end
+	return true
+end
 
 function tv.states.PEP_.Idle.onFinish(p)
 	tv.changeState(p, "IdleAnim"..(P_RandomKey(2)+1), true)
@@ -71,13 +82,15 @@ local function isCurState(p, state)
 end
 
 tv.changeState = function(p, state, skiptrans)
-	if not NTOPP_Check(p) then return end
+	if not canUseTV(p) then return end
 	if not p.pvars.tv then return end
 	local sr = tv.skinRefs[p.mo.skin] or "PEP_"
 	if not tv.states[sr][state] then return end
-
+	
 	if skiptrans then
-		p.pvars.tv.trans = nil
+		if string.lower(state) == "idle"
+			p.pvars.tv.idleadd = TICRATE*P_RandomRange(-1, 2)
+		end
 		p.pvars.tv.anim = state
 		p.pvars.tv.starttime = leveltime
 	else
@@ -102,7 +115,7 @@ addHook('MapChange', function()
 end)
 
 addHook("PlayerThink", function(p)
-	if not NTOPP_Check(p) then return end
+	if not canUseTV(p) then return end
 	if not p.pvars.tv then return end
 	local state = p.pvars.forcedstate
 
@@ -146,44 +159,54 @@ end)
 
 addHook("ThinkFrame", do
 	for p in players.iterate do
-		if not NTOPP_Check(p) then return end
+		if not canUseTV(p) then continue end
 		if not p.pvars.tv then p.pvars.tv = {
 			starttime = leveltime,
-			anim = "Idle"
+			anim = "Idle",
+			idleadd = TICRATE*P_RandomRange(-1, 2)
 		} end
-	
+		
 		local sr = tv.skinRefs[p.mo.skin] or "PEP_"
 		local anim = tv.states[sr][p.pvars.tv.anim]
 		local time = leveltime-p.pvars.tv.starttime
 		local length = anim[2]*anim[3]
 		if anim[4] then length = anim[4] end
-	
-		if time > anim[2]*anim[3] and anim.onFinish then
+		if string.lower(p.pvars.tv.anim) == "idle"
+			length = $+p.pvars.tv.idleadd
+		end
+		
+		if time >= length and anim.onFinish then
 			anim.onFinish(p)
 		end
 		if p.pvars.tv.trans
 		and leveltime-p.pvars.tv.trans.starttime > 5*2 then
 			tv.changeState(p, p.pvars.tv.trans.state, true)
+			p.pvars.tv.trans = nil
 		end
 	end
 end)
 
 local function draw_tv(v, p)
-	if not NTOPP_Check(p) then return end
+	if not canUseTV(p) then return end
 	if not p.pvars.tv then return end
 
 	local sr = tv.skinRefs[p.mo.skin] or "PEP_"
-	//print(sr, p.mo.skin)
 	local anim = tv.states[sr][p.pvars.tv.anim]
 	local time = leveltime-p.pvars.tv.starttime
 
 	local frame = (time % (anim[2]*anim[3])) / anim[3]
 	local patch = v.cachePatch(sr..anim[1].."_"..tostring(frame))
+	local scpatch = v.cachePatch(sr..anim[1].."_"..tostring(frame)+"SC")
+	--print(frame)
 	
-	local x,y,s = 230*FU, -24*FU, FU/3
+	local x,y,s = 220*FU, -20*FU, FU/3
 
 	v.drawScaled(x,y,s, v.cachePatch("GLOB_BG"), V_SNAPTOTOP|V_SNAPTORIGHT)
+	v.drawScaled(x,y,s, v.cachePatch("GLOB_EMPTY"), V_SNAPTOTOP|V_SNAPTORIGHT)
 	v.drawScaled(x,y,s, patch, V_SNAPTOTOP|V_SNAPTORIGHT, v.getColormap(p.mo.skin, p.mo.color))
+	if tv.states[sr].SkinColor
+		v.drawScaled(x,y,s, scpatch, V_SNAPTOTOP|V_SNAPTORIGHT, v.getColormap(p.mo.skin, NoiseSkincolor[p.skincolor] or SKINCOLOR_FLESHEATER))
+	end
 
 	if p.pvars.tv.trans then
 		local frame = ((leveltime-p.pvars.tv.trans.starttime) % (5*2)) / 2

@@ -36,8 +36,8 @@ fsmstates[ntopp_v2.enums.LONGJUMP]['npeppino'] = {
 			fsm.ChangeState(player, ntopp_v2.enums.DIVE)
 		end
 		
-		if not (player.gotflag) and ((player.cmd.buttons & BT_CUSTOM1 and not (player.prevkeys and player.prevkeys & BT_CUSTOM1))) then
-			if (PT_FindPressed(player, "up", player.cmd.buttons)) then
+		if not (player.gotflag) and ((player.cmd.buttons & BT_CUSTOM1 and not (player.pvars.prevkeys and player.pvars.prevkeys & BT_CUSTOM1))) then
+			if (player.cmd.buttons & BT_CUSTOM3) then
 				fsm.ChangeState(player, ntopp_v2.enums.UPPERCUT)
 				return
 			end
@@ -47,7 +47,7 @@ fsmstates[ntopp_v2.enums.LONGJUMP]['npeppino'] = {
 		
 		if NerfAbility() then return end
 		
-		if (player.cmd.buttons & BT_ATTACK) and not (player.prevkeys and player.prevkeys & BT_ATTACK) then
+		if (player.cmd.buttons & BT_ATTACK) and not (player.pvars.prevkeys and player.pvars.prevkeys & BT_ATTACK) then
 			fsm.ChangeState(player, ntopp_v2.enums.TAUNT)
 			return
 		end

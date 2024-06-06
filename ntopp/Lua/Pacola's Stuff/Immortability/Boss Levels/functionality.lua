@@ -21,6 +21,8 @@ ntopp_v2.charhp = {
 }
 
 addHook("MobjDamage", function(pmo, inf, src, _, dmg)
+	if not (pmo and pmo.valid) then return end
+
 	local p = pmo.player
 	if not isIM(pmo.skin)
 	or mapheaderinfo[gamemap].bonustype ~= 1 return end
@@ -135,12 +137,11 @@ addHook("PlayerThink", function(p)
 	end
 	
 	if b.mustime > 0
-		b.mustime = $-FU
-		--print(FixedInt(b.mustime))
-		p.exiting = 5
-	else
-		b.mustime = 0
-	end
+ 		b.mustime = $-FU
+ 		--print(FixedInt(b.mustime))
+ 	else
+ 		b.mustime = 0
+ 	end
 	
 	if p.mo.skin == "nthe_noise"
 	and p.mo.sprite2 == SPR2_TAL7
@@ -210,7 +211,7 @@ addHook("MobjThinker", function(mo)
 		
 		o.angle = p.drawangle
 		local zadd = (o.eflags & MFE_VERTICALFLIP) and mo.height or 0
-		P_MoveOrigin(mo, mo.x, mo.y, mo.z+zadd)
+		P_MoveOrigin(o, mo.x, mo.y, mo.z+zadd)
 		
 		o.color = NoiseSkincolor[p.skincolor] or SKINCOLOR_FLESHEATER
 	end

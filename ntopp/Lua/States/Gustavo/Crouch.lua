@@ -62,7 +62,7 @@ fsmstates[ntopp_v2.enums.CROUCH]['ngustavo'] = {
 			spingap = true
 		end
 		
-		if not (PT_FindPressed(player, "down", player.cmd.buttons)) and P_IsObjectOnGround(player.mo) and not spingap then
+		if not (player.cmd.buttons & BT_CUSTOM2) and P_IsObjectOnGround(player.mo) and not spingap then
 			fsm.ChangeState(player, ntopp_v2.enums.BASE)
 		end
 		

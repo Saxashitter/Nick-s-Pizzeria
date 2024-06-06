@@ -1,11 +1,41 @@
 //// NTOPP ////
 
+rawset(_G, 'L_DecimalFixed', function(str)
+	if str == nil return nil end
+	local dec_offset = string.find(str,'%.')
+	if dec_offset == nil
+		return (tonumber(str) or 0)*FRACUNIT
+	end
+	local whole = tonumber(string.sub(str,0,dec_offset-1)) or 0
+	local decimal = tonumber(string.sub(str,dec_offset+1)) or 0
+	whole = $ * FRACUNIT
+	local dec_len = string.len(decimal)
+	decimal = $ * FRACUNIT / (10^dec_len)
+	return whole + decimal
+end)
+
 rawset(_G, 'ntopp_v2', {})
+rawset(_G, "PIZZAUNIT", FixedMul(FU, L_DecimalFixed("2.5")))
+rawset(_G, "PU", PIZZAUNIT)
+rawset(_G, 'PUL_DecimalFixed', function(str)
+	if str == nil return nil end
+	local dec_offset = string.find(str,'%.')
+	if dec_offset == nil
+		return (tonumber(str) or 0)*PIZZAUNIT
+	end
+	local whole = tonumber(string.sub(str,0,dec_offset-1)) or 0
+	local decimal = tonumber(string.sub(str,dec_offset+1)) or 0
+	whole = $ * PIZZAUNIT
+	local dec_len = string.len(decimal)
+	decimal = $ * PIZZAUNIT / (10^dec_len)
+	return whole + decimal
+end)
+
 ntopp_v2.machs = {
-	15*FU,
-	20*FU,
-	40*FU,
-	75*FU
+	6*PU,
+	12*PU,
+	16*PU,
+	20*PU
 }
 
 rawset(_G, 'L_Choose', function(...)
@@ -20,12 +50,11 @@ dofile('Libs/PacolaAnim.lua')
 dofile("noisecolors.lua") -- this has stuff for noise's skin color, needs to be loaded BEFORE Hooks.lua
 
 dofile('Freeslot.lua')
-dofile('Key Handler.lua')
 dofile('Afterimages.lua')
 dofile('White Flash.lua')
 dofile('Enums.lua')
 dofile('TV.lua')
-dofile('Options Menu.lua')
+dofile('Options.lua')
 dofile('CVars.lua')
 dofile('FSM.lua')
 dofile('HUD.lua')
@@ -74,6 +103,7 @@ dofile(gp+"Body Slam.lua")
 dofile(gp+"Crouch.lua")
 dofile(gp+"Double Jump.lua")
 dofile(gp+"Wall Jump.lua")
+
 
 dofile("Pacola's Stuff/Immortability/Normal Levels/functionality.lua")
 dofile("Pacola's Stuff/Immortability/Normal Levels/hud.lua")

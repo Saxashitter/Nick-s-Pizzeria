@@ -81,11 +81,12 @@ fsmstates[ntopp_v2.enums.DIVE]['ngustavo'] = {
 					player.pvars.forcedstate = S_PEPPINO_DIVEBOMBEND
 				end
 				if player.pvars.forcedstate ~= S_NOISE_CRUSHEREND
-				and player.mo.standingslope then
-					player.pvars.movespeed = ntopp_v2.machs[2]
-					if player.pvars.savedmomz <= -35*FU then
-						player.pvars.movespeed = ntopp_v2.machs[3]
-					end
+				and player.mo.standingslope 
+				and player.mo.skin ~= "ngustavo" then
+					player.pvars.movespeed = ntopp_v2.machs[1]
+-- 					if player.pvars.savedmomz <= -35*FU then
+-- 						player.pvars.movespeed = ntopp_v2.machs[3]
+-- 					end
 					
 					local ang = 0
 					if player.mo.standingslope.zdelta < 0 then
@@ -96,7 +97,7 @@ fsmstates[ntopp_v2.enums.DIVE]['ngustavo'] = {
 					player.drawangle = drawangle
 					fsm.ChangeState(player, ntopp_v2.enums.ROLL)
 				else
-					//player.pvars.movespeed = ntopp_v2.machs[1]
+					player.pvars.movespeed = ntopp_v2.machs[1]
 					if player.pvars.savedmomz <= -35*FU then
 						P_Earthquake(player.mo, player.mo, (400*FU)+(abs(player.pvars.savedmomz)*6))
 					end

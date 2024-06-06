@@ -5,7 +5,7 @@ fsmstates[ntopp_v2.enums.GRAB]['npeppino'] = {
 			player.pvars.movespeed = ntopp_v2.machs[3]-(10*FU)
 		end
 		player.pvars.laststate = state
-		
+
 		player.pvars.drawangle = player.drawangle
 		player.pvars.thrustangle = player.drawangle
 		
@@ -109,11 +109,14 @@ fsmstates[ntopp_v2.enums.GRAB]['npeppino'] = {
 			) then
 				state = ntopp_v2.enums.SWINGDING
 			end
-			if (state == ntopp_v2.enums.PILEDRIVER) then
-
-			elseif (state ~= ntopp_v2.enums.SWINGDING) then
+			if (state ~= ntopp_v2.enums.SWINGDING) then
 				player.pvars.cancelledgrab = true
-				player.pvars.ntoppv2_grabbed.setz = player.mo.height
+				local mo = player.pvars.ntoppv2_grabbed
+				if mo.type ~= MT_PLAYER then
+					mo.setz = player.mo.height
+				elseif mo.player.ntoppv2_plyrgrab then
+					mo.player.ntoppv2_plyrgrab.z = player.mo.height
+				end
 			end
 			fsm.ChangeState(player, state)
 		end
@@ -128,14 +131,24 @@ fsmstates[ntopp_v2.enums.GRAB]['npeppino'] = {
 	end
 }
 
+local ff = CV_FindVar('friendlyfire')
+local blacklist = {
+	[MT_GSNAPPER] = true;
+	[MT_SNAPPER_LEG] = true;
+	[MT_SNAPPER_HEAD] = true
+}
+
 addHook('MobjMoveCollide', function(mo, mobj)
 	if not NTOPP_Check(mo.player) then return end
+	if mo.skin == "ngustavo" then return end
 	local p = mo.player
+	
+	if mo.z>mobj.z+mobj.height then return end
+	if mobj.z>mo.z+mo.height then return end
 
+	if blacklist[mobj.type] then return end
 	if not (mobj.flags & MF_ENEMY) then return end
 	if p.fsm.state ~= ntopp_v2.enums.GRAB then return end
-	if mobj.z > mo.z+mo.height then return end
-	if mo.z > mobj.z+mobj.height then return end
 	if not (p.pvars.ntoppv2_grabbed
 	and p.pvars.ntoppv2_grabbed.valid) then
 		p.pvars.ntoppv2_grabbed = P_SpawnMobj(mobj.x, mobj.y, mobj.z, MT_NTOPP_GRABBED)
@@ -144,3 +157,54 @@ addHook('MobjMoveCollide', function(mo, mobj)
 		p.pvars.ntoppv2_grabbed.setz = mo.height
 	end
 end, MT_PLAYER)
+
+addHook('MobjMoveCollide', function(mo, mobj)
+	if not NTOPP_Check(mo.player) then return end
+	if mo.skin == "ngustavo" then return end
+	if not (ff.value) then return end
+	local p = mo.player
+
+	if mo.z>mobj.z+mobj.height then return end
+	if mobj.z>mo.z+mo.height then return end
+
+	if mobj.type ~= MT_PLAYER then return end
+	if p.fsm.state ~= ntopp_v2.enums.GRAB then return end
+
+	local p2 = mobj.player
+	if p2.ptv3 and p2.ptv3.isSwap == p then return end
+	if p2.ntoppv2_plyrgrab then return end
+	if p2.pvars and p2.pvars.ntoppv2_grabbed then return end
+
+	if not (p.pvars.ntoppv2_grabbed
+	and p.pvars.ntoppv2_grabbed.valid) then
+		p.pvars.ntoppv2_grabbed = mobj
+		mobj.player.ntoppv2_plyrgrab = {x = 0, y = 0, z = p.mo.height, by = mo}
+	end
+end, MT_PLAYER)
+
+addHook('PlayerThink', function(p)
+	if not p.ntoppv2_plyrgrab then return end
+	if not p.mo then p.ntoppv2_plyrgrab = nil return end
+	if not (p.ntoppv2_plyrgrab.by and p.ntoppv2_plyrgrab.by.valid) then p.ntoppv2_plyrgrab = nil return end
+	local gb = p.ntoppv2_plyrgrab.by
+
+	if not NTOPP_Check(gb.player) then p.ntoppv2_plyrgrab = nil return end
+	if gb.player.pvars.ntoppv2_grabbed ~= p.mo then p.ntoppv2_plyrgrab = nil return end
+	if p.playerstate ~= PST_LIVE then
+		gb.player.pvars.ntoppv2_grabbed = nil
+		p.ntoppv2_plyrgrab = nil
+		return
+	end
+
+	p.pflags = $|PF_FULLSTASIS
+	p.mo.momx = gb.momx
+	p.mo.momy = gb.momy
+	p.mo.momz = gb.momz
+	p.drawangle = gb.player.drawangle
+	p.mo.state = S_PLAY_PAIN
+	P_SetOrigin(p.mo,
+		gb.x+p.ntoppv2_plyrgrab.x,
+		gb.y+p.ntoppv2_plyrgrab.y,
+		gb.z+p.ntoppv2_plyrgrab.z
+	)
+end)

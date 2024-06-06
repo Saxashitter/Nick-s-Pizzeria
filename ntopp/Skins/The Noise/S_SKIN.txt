@@ -1,0 +1,23 @@
+name = nthe_noise
+hudname = NOISE
+realname = The_Noise
+flags = SF_HIRES|SF_NOJUMPSPIN|SF_STOMPDAMAGE|SF_NOSKID|SF_SUPER
+normalspeed = 18
+runspeed = 9999
+jumpfactor = 1.2
+accelstart = 60
+acceleration = 45
+thrustfactor = 12
+ability = CA_NONE
+ability2 = CA2_NONE
+prefcolor = Gold
+prefoppositecolor = Purple
+spinitem = MT_NULL
+hiresscale = 2
+contspeed = 2
+
+DSJUMP = DSNJUMP
+DSALTOW1 = sfx_owmyas
+DSALTOW2 = sfx_owmyas
+DSALTOW3 = sfx_owmyas
+DSALTOW4 = sfx_owmyas

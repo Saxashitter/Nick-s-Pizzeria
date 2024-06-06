@@ -5,6 +5,9 @@ local function NerfAbility()
 	and G_CoopGametype())
 end
 
+--local accel = FixedMul(PUL_DecimalFixed("0.1"), FixedDiv(60*FU, 35*FU))
+local accel = FixedMul(PUL_DecimalFixed("0.1"), FixedDiv(60*FU, 35*FU))
+
 fsmstates[ntopp_v2.enums.MACH2]['npeppino'] = {
 	name = "Mach 2",
 	enter = function(self, player)
@@ -35,29 +38,10 @@ fsmstates[ntopp_v2.enums.MACH2]['npeppino'] = {
 			player.pvars.thrustangle = player.drawangle
 		end
 		
-		if player.mo.skin == "nthe_noise" and PT_FindPressed(player, "up", player.cmd.buttons) then
+		if player.mo.skin == "nthe_noise" and player.cmd.buttons & BT_CUSTOM3 then
 			player.pflags = $|PF_JUMPSTASIS
 		end
-		
-		local thrust,angle = PT_ButteredSlope(player.mo)
-		
-		if (P_IsObjectOnGround(player.mo)) then
-			local add = player.powers[pw_sneakers] and FU or 0
-			add = $ + (angle ~= nil and angle > 0 and angle <= 32*ANG1 and FU or 0)
-			player.pvars.movespeed = $+(FU-(FU/4))+add
-			if (not player.pvars.forcedstate or (player.pvars.forcedstate == S_PEPPINO_WALLJUMP or player.pvars.forcedstate == S_PEPPINO_BREAKDANCELAUNCH or player.pvars.forcedstate == S_PEPPINO_LONGJUMP or player.pvars.forcedstate == S_PEPPINO_SLOPEJUMP))
-				player.pvars.forcedstate = S_PEPPINO_MACH2
-			end
-		elseif (player.pvars.forcedstate
-		and player.pvars.forcedstate ~= S_PEPPINO_WALLJUMP
-		and player.pvars.forcedstate ~= S_PEPPINO_BREAKDANCELAUNCH
-		and player.pvars.forcedstate ~= S_PEPPINO_LONGJUMP
-		and player.pvars.forcedstate ~= S_NOISE_SPIN -- for noisey
-		and player.pvars.forcedstate ~= S_PEPPINO_SLOPEJUMP) then
-			player.pvars.forcedstate = nil
-			player.mo.state = S_PEPPINO_SECONDJUMP
-		end
-		
+	
 		/*if player.pvars.forcedstate == S_NOISE_SPIN then
 			print "yea is spinning time"
 		end*/
@@ -94,20 +78,20 @@ fsmstates[ntopp_v2.enums.MACH2]['npeppino'] = {
 		P_InstaThrust(player.mo, player.pvars.thrustangle, FixedMul(player.pvars.movespeed, player.mo.scale))
 		P_MovePlayer(player)
 		
-		if (not (PT_FindPressed(player, "run", player.cmd.buttons)) and P_IsObjectOnGround(player.mo)) then
+		if (not (player.cmd.buttons & BT_SPIN) and P_IsObjectOnGround(player.mo)) then
 			fsm.ChangeState(player, ntopp_v2.enums.SKID)
 			return
 		end
 		
-		if PT_FindPressed(player, "down", player.cmd.buttons) and not P_IsObjectOnGround(player.mo) then
+		if (player.cmd.buttons & BT_CUSTOM2) and not P_IsObjectOnGround(player.mo) then
 			fsm.ChangeState(player, ntopp_v2.enums.DIVE)
 		end
 		
 		if player.mo.skin == "nthe_noise" then
 			if (P_IsObjectOnGround(player.mo) and not (player.gotflag) or
 			not P_IsObjectOnGround(player.mo))
-			and (PT_FindPressed(player, "up", player.cmd.buttons))
-			and ((player.cmd.buttons & BT_JUMP) and not (player.prevkeys & BT_JUMP)) then
+			and (player.cmd.buttons & BT_CUSTOM3)
+			and ((player.cmd.buttons & BT_JUMP) and not (player.pvars.prevkeys & BT_JUMP)) then
 				if (P_IsObjectOnGround(player.mo)
 				or player.ntoppv2_midairsj) then
 					fsm.ChangeState(player, ntopp_v2.enums.SUPERJUMPSTART)
@@ -122,8 +106,8 @@ fsmstates[ntopp_v2.enums.MACH2]['npeppino'] = {
 			end
 		end
 		
-		if not (player.gotflag) and ((PT_FindPressed(player, "atk", player.cmd.buttons) and not (player.prevkeys and PT_FindPressed(player, "atk", player.prevkeys)))) then
-			if (PT_FindPressed(player, "up", player.cmd.buttons)) then
+		if not (player.gotflag) and ((player.cmd.buttons & BT_CUSTOM1 and not (player.pvars.prevkeys and player.pvars.prevkeys & BT_CUSTOM1))) then
+			if (player.cmd.buttons & BT_CUSTOM3) then
 				fsm.ChangeState(player, ntopp_v2.enums.UPPERCUT)
 				return
 			end
@@ -131,7 +115,7 @@ fsmstates[ntopp_v2.enums.MACH2]['npeppino'] = {
 			return
 		end
 		
-		if (PT_FindPressed(player, "down", player.cmd.buttons) and P_IsObjectOnGround(player.mo)) then
+		if (player.cmd.buttons & BT_CUSTOM2 and P_IsObjectOnGround(player.mo)) then
 			fsm.ChangeState(player, ntopp_v2.enums.ROLL)
 		end
 		
@@ -143,19 +127,34 @@ fsmstates[ntopp_v2.enums.MACH2]['npeppino'] = {
 		if NerfAbility() then return end
 		if player.pvars.breakdance then return end
 		
-		if player.pvars.supertauntready and PT_FindPressed(player, "up", player.cmd.buttons)
-		and (PT_FindPressed(player, "taunt", player.cmd.buttons)) and not (player.prevkeys and PT_FindPressed(player, "taunt", player.prevkeys)) then
+		if player.pvars.supertauntready and player.cmd.buttons & BT_CUSTOM3 and (player.cmd.buttons & BT_TOSSFLAG) and not (player.pvars.prevkeys and player.pvars.prevkeys & BT_TOSSFLAG) then
 			fsm.ChangeState(player, ntopp_v2.enums.SUPERTAUNT)
 			return
 		end
 		
-		if (PT_FindPressed(player, "taunt", player.cmd.buttons))
-		and not (player.prevkeys and PT_FindPressed(player, "taunt", player.prevkeys)) then
+		if (player.cmd.buttons & BT_TOSSFLAG) and not (player.pvars.prevkeys and player.pvars.prevkeys & BT_TOSSFLAG) then
 			fsm.ChangeState(player, ntopp_v2.enums.TAUNT)
 			return
 		end
 	end,
 	think = function(self, p)
+		local thrust,angle = PT_ButteredSlope(p.mo)
+		if (P_IsObjectOnGround(p.mo)) then
+			local add = p.powers[pw_sneakers] and FU or 0
+			add = $ + (angle ~= nil and angle > 0 and angle <= 32*ANG1 and FU or 0)
+			p.pvars.movespeed = $+(accel+add)
+			if (not p.pvars.forcedstate or (p.pvars.forcedstate == S_PEPPINO_WALLJUMP or p.pvars.forcedstate == S_PEPPINO_BREAKDANCELAUNCH or p.pvars.forcedstate == S_PEPPINO_LONGJUMP or p.pvars.forcedstate == S_PEPPINO_SLOPEJUMP))
+				p.pvars.forcedstate = S_PEPPINO_MACH2
+			end
+		elseif (p.pvars.forcedstate
+		and p.pvars.forcedstate ~= S_PEPPINO_WALLJUMP
+		and p.pvars.forcedstate ~= S_PEPPINO_BREAKDANCELAUNCH
+		and p.pvars.forcedstate ~= S_PEPPINO_LONGJUMP
+		and p.pvars.forcedstate ~= S_NOISE_SPIN -- for noisey
+		and p.pvars.forcedstate ~= S_PEPPINO_SLOPEJUMP) then
+			p.pvars.forcedstate = nil
+			p.mo.state = S_PEPPINO_SECONDJUMP
+		end
 		p.ntoppv2_machtime = $+1
 	end,
 	exit = function(self, player, state)

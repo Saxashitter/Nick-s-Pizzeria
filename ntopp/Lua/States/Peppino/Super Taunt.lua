@@ -25,14 +25,6 @@ fsmstates[ntopp_v2.enums.SUPERTAUNT]['npeppino'] = {
 		P_Earthquake(player.mo, player.mo,1500*FU)
 	end,
 	playerthink = function(self, player)
-		if not (player.mo) then return end
-		if not (player.pvars) or player.playerstate == PST_DEAD then
-			player.pvars = NTOPP_Init()
-			if (player.playerstate == PST_DEAD) then
-				return
-			end
-		end
-		
 		player.mo.momx = 0
 		player.mo.momy = 0
 		player.mo.momz = 0
