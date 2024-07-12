@@ -80,6 +80,8 @@ addHook("PlayerThink", function(p)
 	if p.ntoppimmortal == nil
 		initializeVars(p)
 	end
+	p.powers[pw_underwater] = 0 -- how'd i forget
+	p.powers[pw_spacetime] = 0 -- about these
 	local i = p.ntoppimmortal
 	local d = i.difft
 	
@@ -107,6 +109,10 @@ addHook("PlayerThink", function(p)
 				c.chase = true
 				c.z = i.camz
 			end
+		elseif d.sadd < 0
+		and i.fakeplyr
+		and i.fakeplyr.valid
+			P_RemoveMobj(i.fakeplyr)
 		end
 		i.timer = $+1
 		if i.timer == FixedRound(80*FixedDiv(60, TICRATE))/FU
@@ -128,6 +134,8 @@ addHook("PlayerThink", function(p)
 		if (i.fakeplyr and i.fakeplyr.valid)
 			local fp = i.fakeplyr
 			fp.state = pmo.state
+			fp.sprite = pmo.sprite
+			fp.sprite2 = pmo.sprite2 -- making sure
 			fp.frame = pmo.frame
 		end
 		

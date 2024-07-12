@@ -1,5 +1,13 @@
 //// NTOPP ////
 
+-- the pt value shittery lols
+rawset(_G, "PIZZAUNIT", FU+(FU*3/2))
+rawset(_G, "PU", PIZZAUNIT)
+
+rawset(_G, "NTOPP_60FPSto35", function(value)
+	return FixedDiv(value, FixedDiv(60*FU, TICRATE*FU))/35
+end)
+
 rawset(_G, 'L_DecimalFixed', function(str)
 	if str == nil return nil end
 	local dec_offset = string.find(str,'%.')
@@ -13,11 +21,7 @@ rawset(_G, 'L_DecimalFixed', function(str)
 	decimal = $ * FRACUNIT / (10^dec_len)
 	return whole + decimal
 end)
-
-rawset(_G, 'ntopp_v2', {})
-rawset(_G, "PIZZAUNIT", FixedMul(FU, L_DecimalFixed("2.5")))
-rawset(_G, "PU", PIZZAUNIT)
-rawset(_G, 'PUL_DecimalFixed', function(str)
+rawset(_G, 'L_PTDecimalFixed', function(str)
 	if str == nil return nil end
 	local dec_offset = string.find(str,'%.')
 	if dec_offset == nil
@@ -31,8 +35,9 @@ rawset(_G, 'PUL_DecimalFixed', function(str)
 	return whole + decimal
 end)
 
+rawset(_G, 'ntopp_v2', {})
 ntopp_v2.machs = {
-	6*PU,
+	8*PU,
 	12*PU,
 	16*PU,
 	20*PU

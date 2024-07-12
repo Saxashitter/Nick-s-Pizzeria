@@ -1,7 +1,7 @@
 name = nthe_noise
 hudname = NOISE
 realname = The_Noise
-flags = SF_HIRES|SF_NOJUMPSPIN|SF_STOMPDAMAGE|SF_NOSKID|SF_SUPER
+flags = SF_HIRES|SF_NOJUMPSPIN|SF_STOMPDAMAGE|SF_NOSKID|SF_NOSUPERSPRITES|SF_SUPER
 normalspeed = 18
 runspeed = 9999
 jumpfactor = 1.2

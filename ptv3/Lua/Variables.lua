@@ -41,6 +41,13 @@ CV_PTV3['time_for_pizzaface_player'] = CV_RegisterVar({
 	flags = CV_NETVAR,
 })
 
+CV_PTV3RS['time'] = CV_RegisterVar({
+	name = "PTV3M_time",
+	defaultvalue = 300,
+	flags = CV_NETVAR,
+	PossibleValue = CV_Unsigned
+})
+
 local function findPlayer(name)
 	local player
 	local namenum = tonumber(name)
@@ -141,13 +148,19 @@ local synced_variables = {
 	['pizzaface'] = false,
 	['snick'] = false,
 	['overtime'] = false,
-	['time'] = 600*TICRATE,
+	['time'] = 300*TICRATE,
 	['pftime'] = 30*TICRATE,
 	['overtime_time'] = 120*TICRATE,
 	['secrets'] = {},
 	['game_over'] = -1,
 	['hud_pt'] = -1,
 	['matchLog'] = {}
+}
+local synced_variables_rs = {
+	pizzaface = false,
+	time = 300*TICRATE,
+	overtime = false
+	overtime_time = 120*TICRATE,
 }
 
 local unsynced_variables = {

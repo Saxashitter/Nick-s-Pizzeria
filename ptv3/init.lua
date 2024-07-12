@@ -1,5 +1,7 @@
 rawset(_G, "PTV3", {})
 rawset(_G, "CV_PTV3", {})
+rawset(_G, "PTV3RS", {})
+rawset(_G, "CV_PTV3RS", {})
 
 -- this seems out of place, i know, but its for a reason
 
@@ -26,14 +28,14 @@ G_AddGametype({
 })
 
 G_AddGametype({
-    name = "P.T.: PizzaTag",
-    identifier = "PTV3T",
-    typeoflevel = TOL_MATCH,
-    rules = GTR_TAG|GTR_FRIENDLYFIRE|GTR_OVERTIME|GTR_POINTLIMIT|GTR_TIMELIMIT|GTR_HURTMESSAGES
+    name = "P.T.: PFSlinger",
+    identifier = "PTV3RS",
+    typeoflevel = TOL_MATCH|TOL_TAG,
+    rules = GTR_FRIENDLYFIRE|GTR_OVERTIME|GTR_POINTLIMIT|GTR_HURTMESSAGES|GTR_RINGSLINGER,
     intermissiontype = int_match,
     headerleftcolor = 222,
     headerrightcolor = 84,
-    description = "Things are heating up. Play a match of Tag while Pizzaface chases all the players! If Overtime starts, Pizzaface will begin eliminating all the players!"
+    description = "Things are heating up! Play a classic match of Ringslinger while Pizzaface chases all the players. If Overtime starts, Pizzaface will begin eliminating everyone."
 })
 
 function PTV3:isPTV3(dontCheckState)
@@ -43,6 +45,14 @@ function PTV3:isPTV3(dontCheckState)
 	end
 
 	return gametype == GT_PTV3 or gametype == GT_PTV3DM or not multiplayer
+end
+function PTV3:isPTV3RS(dontCheckState)
+	if not dontCheckState
+	and gamestate ~= GS_LEVEL then
+		return false
+	end
+
+	return gametype == GT_PTV3RS
 end
 
 -- Actions

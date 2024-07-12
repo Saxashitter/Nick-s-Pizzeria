@@ -192,6 +192,8 @@ addHook("PlayerThink",function(player)//tornado effects
     fxone.tics = P_RandomRange(35, 70)
 	fxone.momx = P_RandomRange(-3, 3)*FRACUNIT
 	fxone.momy = P_RandomRange(-3, 3)*FRACUNIT
+	fxone.scale = player.mo.scale
+	fxone.eflags = player.mo.eflags
 	P_SetObjectMomZ(fxone, P_RandomRange(1, 5)*FRACUNIT, true)
 	fxone.color = player.mo.color
 	end
@@ -201,6 +203,8 @@ addHook("PlayerThink",function(player)//tornado effects
     fxtwo.frame = A|FF_PAPERSPRITE
 	fxtwo.angle = player.drillframe*ANG10 + ANGLE_90
     fxtwo.tics = 2
+	fxtwo.scale = player.mo.scale
+	fxtwo.eflags = player.mo.eflags
 	 P_MoveOrigin(fxtwo,
         player.mo.x - FixedMul(cos(player.drillframe*ANG10), 25*FRACUNIT),
         player.mo.y - FixedMul(sin(player.drillframe*ANG10), 25*FRACUNIT), 
@@ -219,7 +223,9 @@ addHook("PlayerThink",function(player) //super noise's spark effects
 	and player.powers[pw_super]
 	if P_RandomRange(0, 50) > 40 and leveltime%2
 local fxthree = P_SpawnMobjFromMobj(player.mo, 0, 0, 0, MT_THOK)
+fxthree.scale = player.mo.scale
 fxthree.state = S_NSUPERSPARK
+fxthree.eflags = player.mo.eflags
 	 P_MoveOrigin(fxthree,
         player.mo.x - FixedMul(cos(P_RandomRange(0, 360)*ANG1), P_RandomRange(20, 30)*FRACUNIT),
         player.mo.y - FixedMul(sin(P_RandomRange(0, 360)*ANG1), P_RandomRange(20, 30)*FRACUNIT),

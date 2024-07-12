@@ -14,7 +14,7 @@ local function NerfAbility()
 end
 
 local function convertMach(num)
-	return FixedMul(num, 50*FU/12)
+	return FixedMul(num, ntopp_v2.machs[3]/12)
 end
 
 fsmstates[ntopp_v2.enums.BASE]["ngustavo"] = {

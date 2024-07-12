@@ -4,6 +4,8 @@
 -- which is the actual action definition
 -- and the stuff that animates you
 
+if (PacolaCAVar3 or PacolaCAVar4 or PacolaCASkin) then return end
+
 rawset(_G, "PacolaCAVar3", {}) -- so you can change the animation speed when it loops
 rawset(_G, "PacolaCAVar4", {}) -- the frame it ends on, by nick
 rawset(_G, "PacolaCASkin", {}) -- so you stuff can be skin specific
@@ -42,18 +44,18 @@ function A_PacolaCustomAnim(mo, v1, v2) -- var1 is the anim frames, while var2 i
 	if PacolaCASkin[mo.skin]
 	and PacolaCASkin[mo.skin][mo.state]
 		local skin = PacolaCASkin[mo.skin][mo.state]
-		if skin.v1
+		if skin.v1 ~= nil
 			animvar = skin.v1
 		end
-		if skin.v2
+		if skin.v2 ~= nil
 			loopvar = skin.v2
 		end
-		if skin.v3
+		if skin.v3 ~= nil
 			animvar2 = skin.v3
 		else
 			animvar2 = animvar
 		end
-		if skin.v4 then
+		if skin.v4 ~= nil then
 			endvar = skin.v4
 		end
 	end

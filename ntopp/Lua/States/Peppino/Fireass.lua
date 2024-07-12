@@ -13,9 +13,12 @@ end
 fsmstates[ntopp_v2.enums.FIREASS]['npeppino'] = {
 	name = "Fireass",
 	enter = function(self, player, state)
-		if player.mo.eflags & MFE_VERTICALFLIP and player.mo.z ~= player.mo.floorz
-		or player.mo.z+player.mo.height ~= player.mo.ceilingz
+		local cz = (player.mo.eflags & MFE_VERTICALFLIP) and player.mo.floorz or player.mo.ceilingz
+		local height = (player.mo.eflags & MFE_VERTICALFLIP) and 1 or player.mo.height+1
+		height = $-1
+		if player.mo.z+height ~= cz
 			L_ZLaunch(player.mo, 25*FU)
+			print(player.mo.z/FU, cz/FU)
 		else
 			L_ZLaunch(player.mo, -25*FU)
 		end
@@ -25,11 +28,11 @@ fsmstates[ntopp_v2.enums.FIREASS]['npeppino'] = {
 		player.pvars.movespeed = ntopp_v2.machs[1]
 		if not player.pvars.fascreamdelay
 			if player.mo.skin == "nthe_noise" //added this, i forgot to add it last time lol -rbf
-			S_StartSound(player.mo, sfx_dwaha)
-		else
-			S_StartSound(player.mo, sfx_eyaow)
-		end
-		player.pvars.fascreamdelay = 3*TICRATE
+				S_StartSound(player.mo, sfx_dwaha)
+			else
+				S_StartSound(player.mo, sfx_eyaow)
+			end
+			player.pvars.fascreamdelay = 3*TICRATE
 		end
 	end,
 	playerthink = function(self, p)

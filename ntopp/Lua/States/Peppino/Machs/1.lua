@@ -5,7 +5,7 @@ local function NerfAbility()
 	and G_CoopGametype())
 end
 
-local accel = FixedMul((PU-(PU/4))/10, FixedDiv(60*FU, 35*FU))
+local accel = FixedMul((PU*2)+((PU/4)/10), FixedDiv(60*FU, 35*FU))
 
 fsmstates[ntopp_v2.enums.MACH1]['npeppino'] = {
 	name = "Mach 1",
@@ -99,11 +99,13 @@ fsmstates[ntopp_v2.enums.MACH1]['npeppino'] = {
 		end
 	end,
 	think = function(self, p)
-		local thrust,angle = PT_ButteredSlope(p.mo)
+		local thrust,angle,slang = PT_ButteredSlope(p.mo)
+		local pang = R_PointToAngle2(0, 0, p.mo.momx, p.mo.momy)
 		if (P_IsObjectOnGround(p.mo)) then
 			local add = p.powers[pw_sneakers] and FU or 0
-			add = $ + (angle ~= nil and angle > 0 and angle <= 32*ANG1 and FU or 0)
-			p.pvars.movespeed = $+accel+add
+			local ang = angle ~= nil and angle or 0
+			add = $ + (angle ~= nil and pang >= slang-32*ANG1 and pang <= slang+32*ANG1 and FU or 0)
+			p.pvars.movespeed = $+(accel)+add
 			if (not p.pvars.forcedstate)
 				p.pvars.forcedstate = S_PEPPINO_MACH1
 			end

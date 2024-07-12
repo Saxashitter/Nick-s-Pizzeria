@@ -102,15 +102,7 @@ fsmstates[ntopp_v2.enums.DIVE]['nthe_noise'] = {
 	playerthink = function(self, player)
 		player.pvars.groundthing = P_IsObjectOnGround(player.mo)
 		
-		if not player.pvars.groundthing
-			player.pvars.forcedstate = S_NOISE_DRILLAIR
-		elseif player.pvars.forcedstate == S_NOISE_DRILLAIR
-		    player.pvars.forcedstate = S_NOISE_DRILLLAND
-		else
-			player.pvars.forcedstate = S_PEPPINO_DIVEBOMB
-		end
-		
-		if (player.cmd.buttons & BT_CUSTOM1)
+		if (player.cmd.buttons & BT_CUSTOM1) -- i just copied this from think, apparently it fixed it!!
 		and not (player.pvars.prevkeys & BT_CUSTOM1) then -- look nick you can do it in this state dummy.............
 			player.pvars.movespeed = ntopp_v2.machs[3]
 			player.drawangle = NTOPP_ReturnControlsAngle(player)
@@ -120,6 +112,14 @@ fsmstates[ntopp_v2.enums.DIVE]['nthe_noise'] = {
 				L_ZLaunch(player.mo, 4*FU)
 			end
 			return
+		end
+		
+		if not player.pvars.groundthing
+			player.pvars.forcedstate = S_NOISE_DRILLAIR
+		elseif player.pvars.forcedstate == S_NOISE_DRILLAIR
+		    player.pvars.forcedstate = S_NOISE_DRILLLAND
+		else
+			player.pvars.forcedstate = S_PEPPINO_DIVEBOMB
 		end
 		
 		player.pflags = $|PF_JUMPSTASIS
@@ -153,12 +153,29 @@ fsmstates[ntopp_v2.enums.DIVE]['nthe_noise'] = {
 		/*if not (leveltime % 4)
 			NTOPP_NoiseAI(player.mo, 2)
 		end*/
+		local p = player -- i need p -Pacola
+		local camera_angle = (p.cmd.angleturn<<16) -- i copied these two from Functions.lua!!
+		local controls_angle = R_PointToAngle2(0,0, p.cmd.forwardmove*FU, -p.cmd.sidemove*FU)
+		local x = cos(camera_angle+controls_angle)
+		local y = sin(camera_angle+controls_angle)
+		local cz = (p.mo.eflags & MFE_VERTICALFLIP) and P_FloorzAtPos(p.mo.x+FixedMul(p.mo.radius+8*FU, x), p.mo.y+FixedMul(p.mo.radius+8*FU, y), p.mo.z+p.mo.momz, P_GetPlayerSpinHeight(p)) or P_CeilingzAtPos(p.mo.x+FixedMul(p.mo.radius+8*FU, x), p.mo.y+FixedMul(p.mo.radius+8*FU, y), p.mo.z+p.mo.momz, P_GetPlayerSpinHeight(p))
+		local sh = (p.mo.eflags & MFE_VERTICALFLIP) and P_GetPlayerHeight(p)-P_GetPlayerSpinHeight(p) or P_GetPlayerSpinHeight(p)
+		local h = (p.mo.eflags & MFE_VERTICALFLIP) and 1 or P_GetPlayerHeight(p)+1
+		if not (p.cmd.forwardmove or p.cmd.sidemove)
+			cz = (p.mo.eflags & MFE_VERTICALFLIP) and p.mo.floorz or p.mo.ceilingz
+		end
+		h = $-1
+		if p.mo.z+h >= cz
+		and p.mo.z+sh <= cz
+			fsm.ChangeState(player, ntopp_v2.enums.ROLL)
+			return
+		end
 	end,
 	exit = function(self, player, state)
 		player.normalspeed = skins[player.mo.skin].normalspeed
 	
 		if state == ntopp_v2.enums.ROLL then
-			player.pvars.movespeed = player.speed
+			player.pvars.movespeed = max(player.speed, ntopp_v2.machs[1])
 		end
 	end
 }

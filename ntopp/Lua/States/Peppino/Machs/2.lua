@@ -5,8 +5,7 @@ local function NerfAbility()
 	and G_CoopGametype())
 end
 
---local accel = FixedMul(PUL_DecimalFixed("0.1"), FixedDiv(60*FU, 35*FU))
-local accel = FixedMul(PUL_DecimalFixed("0.1"), FixedDiv(60*FU, 35*FU))
+local accel = FixedMul(L_PTDecimalFixed("0.1"), FixedDiv(60*FU, 35*FU))
 
 fsmstates[ntopp_v2.enums.MACH2]['npeppino'] = {
 	name = "Mach 2",
@@ -16,7 +15,7 @@ fsmstates[ntopp_v2.enums.MACH2]['npeppino'] = {
 		player.pvars.drawangle = player.drawangle
 		player.pvars.thrustangle = player.drawangle
 		player.charflags = $|SF_RUNONWATER
-		player.runspeed = 50*FU
+		player.runspeed = ntopp_v2.machs[3] -- yay
 		player.ntoppv2_machtime = 0
 	end,
 	playerthink = function(self, player)
@@ -138,11 +137,12 @@ fsmstates[ntopp_v2.enums.MACH2]['npeppino'] = {
 		end
 	end,
 	think = function(self, p)
-		local thrust,angle = PT_ButteredSlope(p.mo)
+		local thrust,angle,slang = PT_ButteredSlope(p.mo)
+		local pang = R_PointToAngle2(0, 0, p.mo.momx, p.mo.momy)
 		if (P_IsObjectOnGround(p.mo)) then
 			local add = p.powers[pw_sneakers] and FU or 0
-			add = $ + (angle ~= nil and angle > 0 and angle <= 32*ANG1 and FU or 0)
-			p.pvars.movespeed = $+(accel+add)
+			add = $ + (angle ~= nil and pang >= slang-32*ANG1 and pang <= slang+32*ANG1 and FU or 0)
+			p.pvars.movespeed = $+accel+add
 			if (not p.pvars.forcedstate or (p.pvars.forcedstate == S_PEPPINO_WALLJUMP or p.pvars.forcedstate == S_PEPPINO_BREAKDANCELAUNCH or p.pvars.forcedstate == S_PEPPINO_LONGJUMP or p.pvars.forcedstate == S_PEPPINO_SLOPEJUMP))
 				p.pvars.forcedstate = S_PEPPINO_MACH2
 			end

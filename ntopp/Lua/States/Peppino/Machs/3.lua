@@ -2,8 +2,6 @@ local function IsMach4(speed)
 	return (speed >= ntopp_v2.machs[4])
 end
 
-local accel = (PU/4)/10
-
 local function spawnmobjfrommobjflagless(mobj,x,y,z,type)
 	return P_SpawnMobj(mobj.x+x, mobj.y+y, mobj.z+z, type)
 end
@@ -15,6 +13,9 @@ local function NerfAbility()
 	and G_CoopGametype())
 end
 
+local accel = FixedMul((PU/4)/10, FixedDiv(60*FU, 35*FU))
+local m4accel = FixedMul(L_PTDecimalFixed("0.1"), FixedDiv(60*FU, 35*FU))
+
 fsmstates[ntopp_v2.enums.MACH3]['npeppino'] = {
 	name = "Mach 3",
 	enter = function(self, player)
@@ -24,7 +25,7 @@ fsmstates[ntopp_v2.enums.MACH3]['npeppino'] = {
 		player.pvars.thrustangle = player.drawangle
 		player.pvars.jumppressed = P_IsObjectOnGround(player.mo)
 		player.charflags = $|SF_RUNONWATER|SF_CANBUSTWALLS
-		player.runspeed = ntopp_v2.machs[3]
+		player.runspeed = ntopp_v2.machs[3] -- yay
 		
 		local x,y = cos(player.drawangle),sin(player.drawangle)
 		local offset = 20
@@ -105,22 +106,21 @@ fsmstates[ntopp_v2.enums.MACH3]['npeppino'] = {
 			player.charflags = $ & ~SF_RUNONWATER
 		end
 		
-		local thrust,angle = PT_ButteredSlope(player.mo)
+		local thrust,angle,slang = PT_ButteredSlope(player.mo)
+		local pang = R_PointToAngle2(0, 0, player.mo.momx, player.mo.momy)
 		
 		if (P_IsObjectOnGround(player.mo)) then
 			player.pvars.mach_jump_deb = false
-			if (player.cmd.forwardmove or player.cmd.sidemove) then
-				local add = player.powers[pw_sneakers] and FU or 0
-				add = $ + (angle ~= nil and angle > 0 and angle <= 32*ANG1 and FU or 0)
-				if (NerfAbility()) then
-					player.pvars.movespeed = min(46*FU, $+(FU/5)+add)
-				else
-					if player.pvars.movespeed < ntopp_v2.machs[4]
-						player.pvars.movespeed = $+accel+add
-					end
-				end
+				
+			if (NerfAbility()) then
+				player.pvars.movespeed = min(46*FU, $+(FU/5)+add)
 			else
-				player.pvars.movespeed = max(ntopp_v2.machs[3], $-accel)
+				if player.pvars.movespeed < ntopp_v2.machs[4] then
+					local add = player.powers[pw_sneakers] and FU or 0
+					local accel = (player.cmd.forwardmove or player.cmd.sidemove) and m4accel or accel
+					add = $ + (angle ~= nil and pang >= slang-32*ANG1 and pang <= slang+32*ANG1 and FU or 0)
+					player.pvars.movespeed = $+accel+add
+				end
 			end
 			
 			if (player.pvars.forcedstate == S_PEPPINO_SUPERJUMPCANCEL) then

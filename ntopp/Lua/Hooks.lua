@@ -898,33 +898,36 @@ addHook("ThinkFrame", function() -- this doesnt even work properly :sob: (future
 
 		if p.mo.skin ~= "nthe_noise"
 		and p.mo.skin ~= "ngustavo" then
-			soupflagcheck(p)
+			if p.mo.skin ~= "ngustavo"
+				soupflagcheck(p)
+			end
 			continue
 		end
 	
 		if p.mo.skin == "nthe_noise" then
-			p.mo.eflags = ($1|MFE_FORCENOSUPER) & ~MFE_FORCESUPER
-			p.ntoppv2_soupflagsapplied = true
-			
 			if not (p.ntoppv2_skinmo and p.ntoppv2_skinmo.valid) then
-				p.ntoppv2_skinmo = P_SpawnMobj(p.mo.x, p.mo.y, p.mo.z, MT_NOISE_OVERLAY)
+				--p.ntoppv2_skinmo = P_SpawnMobj(p.mo.x, p.mo.y, p.mo.z, MT_OVERLAY)
+				p.ntoppv2_skinmo = P_SpawnMobj(p.mo.x, p.mo.y, p.mo.z, MT_NOISE_OVERLAY) -- for some reason MT_OVERLAY is a tiny bit offset from noise???
 				local s = p.ntoppv2_skinmo
 				s.skin = p.mo.skin
-				s.state = p.mo.state
+				--s.state = p.mo.state
+				s.state = S_INVISIBLE
+				s.tics = -1
+				s.anim_duration = -1
 				s.target = p.mo
 			else
 				local mo = p.ntoppv2_skinmo
 				local pmo = p.mo
 				mo.flags2 = pmo.flags2
 				mo.eflags = (pmo.eflags & ~MFE_FORCENOSUPER)|MFE_FORCESUPER
-				mo.state = pmo.state
+				--mo.state = pmo.state*/
 				mo.sprite = pmo.sprite
 				mo.sprite2 = pmo.sprite2|FF_SPR2SUPER
 				mo.frame = pmo.frame
-				mo.tics = pmo.tics
+				--mo.tics = pmo.tics
 				mo.scale = pmo.scale
-				mo.anim_duration = pmo.anim_duration
-				mo.dispoffset = pmo.dispoffset+1
+				/*mo.anim_duration = pmo.anim_duration
+				mo.dispoffset = pmo.dispoffset+1*/
 				
 				mo.angle = p.drawangle
 				local zadd = (mo.eflags & MFE_VERTICALFLIP) and pmo.height or 0
@@ -934,13 +937,20 @@ addHook("ThinkFrame", function() -- this doesnt even work properly :sob: (future
 			end
 		end
 			
-			if p.mo.skin ~= "ngustavo" continue end
-			
-			if p.ntoppv2_hasbrick
-				p.mo.eflags = ($1|MFE_FORCENOSUPER) & ~MFE_FORCESUPER
-			else
-				p.mo.eflags = ($1|MFE_FORCESUPER) & ~MFE_FORCENOSUPER
-			end
-			p.ntoppv2_soupflagsapplied = true
+		if p.mo.skin ~= "ngustavo" continue end
+		
+		if p.ntoppv2_hasbrick
+			p.mo.eflags = ($1|MFE_FORCENOSUPER) & ~MFE_FORCESUPER
+		else
+			p.mo.eflags = ($1|MFE_FORCESUPER) & ~MFE_FORCENOSUPER
+		end
+		p.ntoppv2_soupflagsapplied = true
 	end
 end)
+
+addHook("MobjThinker", function(mo)
+	if not (mo.target and mo.target.valid)
+		P_RemoveMobj(mo)
+		return
+	end
+end, MT_NOISE_OVERLAY)

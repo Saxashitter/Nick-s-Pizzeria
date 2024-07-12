@@ -709,6 +709,12 @@ states[S_PEPPINO_BREAKDANCELAUNCH] = {SPR_PLAY, SPR2_BTAT, 2, nil, 0, 0, S_PEPPI
 
 states[S_PEPPINO_BOOGIE] = {SPR_PLAY, SPR2_TIRE, 3, nil, 0, 0, S_PEPPINO_BOOGIE}
 
+if not PacolaCAVar3 -- nick there's legit a skin thing above the og location, what were you thinking?????
+	rawset(_G, "PacolaCAVar3", {}) -- so you can change the animation speed when it loops
+	rawset(_G, "PacolaCAVar4", {}) -- the frame it ends on, by nick
+	rawset(_G, "PacolaCASkin", {}) -- so you stuff can be skin specific
+end
+
 states[S_PEPPINO_SLOPEJUMP] = {
 	sprite = SPR_PLAY,
 	frame = SPR2_PRAM,
@@ -726,12 +732,6 @@ end
 PacolaCASkin["nthe_noise"][S_PEPPINO_SLOPEJUMP] = {
 	v2 = A
 }
-
-if not PacolaCAVar3
-	rawset(_G, "PacolaCAVar3", {}) -- so you can change the animation speed when it loops
-	rawset(_G, "PacolaCAVar4", {}) -- the frame it ends on, by nick
-	rawset(_G, "PacolaCASkin", {}) -- so you stuff can be skin specific
-end
 
 states[S_PEPPINO_SUPERTAUNT1] = {SPR_PLAY, SPR2_STA1|FF_ANIMATE|A, 10*2, nil, 9, 2, S_PLAY_STND}
 states[S_PEPPINO_SUPERTAUNT2] = {SPR_PLAY, SPR2_STA2|FF_ANIMATE|A, 10*2, nil, 9, 2, S_PLAY_STND}

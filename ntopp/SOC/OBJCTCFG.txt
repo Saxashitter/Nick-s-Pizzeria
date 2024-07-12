@@ -14,6 +14,7 @@ Fire Normal (Non-competitive modes) - Breakdance
 
 Tip: This is the exact Peppino as the one in Pizza Tower. Yes, this means even some tech is possible!
 #
+
 Character
 SkinName = nthe_noise
 DisplayName = The_Noise
@@ -29,4 +30,22 @@ Toss Flag - Taunt
 Fire Normal (Non-competitive modes) - Breakdance
 
 Tip: He's basically what happens if you give Peppino a energy drink.
+#
+
+Character
+SkinName = ngustavo
+DisplayName = Gustavo
+TagTextColor = SKINCOLOR_WHITE
+TagOutlineColor = SKINCOLOR_BLACK
+OppositeColor = SKINCOLOR_ORANGE
+PlayerText = Gustavo can't superjump or climb walls, but Brick comes in handy when it comes top wall-jumping.
+
+Custom 1 - Spin
+Custom 2 - Down Action
+Custom 3 - Up Action
+Toss Flag - Taunt
+Jump - Double Jump
+Hit Wall (After Double Jump) - Wall Jump
+
+Tip: Some moves can only be done while mounted on Brick, or only be done when not mounted on Brick.
 #

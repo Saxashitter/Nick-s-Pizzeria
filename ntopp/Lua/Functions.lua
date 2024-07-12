@@ -219,6 +219,7 @@ rawset(_G, "NTOPP_WorldToScreen2", R_WorldToScreen2)
 rawset(_G, "PT_ButteredSlope", function(mo)
 	local thrust
 	local angle
+	local slang -- pacola addition here yay!!!
 
 	if (not mo.standingslope) then
 		return 0
@@ -227,7 +228,7 @@ rawset(_G, "PT_ButteredSlope", function(mo)
 	if (mo.standingslope.flags & SL_NOPHYSICS) then
 		return 0
 	end
-
+	
 	if (mo.flags & (MF_NOCLIPHEIGHT|MF_NOGRAVITY)) then
 		return 0
 	end
@@ -248,7 +249,7 @@ rawset(_G, "PT_ButteredSlope", function(mo)
 		local mult = 0
 		if (mo.momx or mo.momy) then
 			angle = R_PointToAngle2(0, 0, mo.momx, mo.momy) - mo.standingslope.xydirection
-
+			
 			if (P_MobjFlip(mo) * mo.standingslope.zdelta < 0) then
 				angle = $^ANGLE_180
 			end
@@ -268,7 +269,12 @@ rawset(_G, "PT_ButteredSlope", function(mo)
 
 	thrust = FixedMul(thrust, mo.friction)
 
-	return thrust,angle
+	local sl = mo.standingslope
+	if sl
+		slang = sl.zangle > 0 and sl.xydirection+ANGLE_180 or sl.xydirection
+	end
+
+	return thrust,angle, slang
 end)
 
 rawset(_G, 'isPTSkin', function(skin)

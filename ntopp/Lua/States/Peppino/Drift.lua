@@ -14,8 +14,8 @@ fsmstates[ntopp_v2.enums.DRIFT]['npeppino'] = {
 			player.mo.state = S_PEPPINO_MACHDRIFTTRNS3
 			player.pvars.drifttime = 13*2
 			S_StartSound(player.mo, sfx_drift)
+			player.runspeed = 0
 		end
-		player.runspeed = 50*FU
 		player.charflags = $|SF_RUNONWATER
 		player.pvars.laststate = last_state // gotta use it to continue the speed where it was left off of
 		// if (last_state == ntopp_v2.enums.MACH4) then player.pvars.laststate = ntopp_v2.enums.MACH3 end
@@ -97,41 +97,8 @@ fsmstates[ntopp_v2.enums.DRIFT]['npeppino'] = {
 		
 		player.runspeed = skins[player.mo.skin].runspeed
 		player.charflags = $ & ~SF_RUNONWATER
-		
-		-- pacola stuff to drift on water here
-		local p = player
-		if (p.ntoppv2_driftmo and p.ntoppv2_driftmo.valid)
-			P_RemoveMobj(p.ntoppv2_driftmo)
-		end
-		p.ntoppv2_driftmo = nil
-		if p.ntoppv2_waterdrifting
-			p.mo.momz = 2*FU
-		end
-		p.ntoppv2_waterdrifting = false
 	end
 }
-
-local function collide(pmo, d)
-	if d.type ~= MT_THOK
-	or not d.ntoppv2_driftmo
-	or pmo.player.ntoppv2_waterdrifting return end
-	
-	local wdist = R_PointToDist2(pmo.z, pmo.z, pmo.watertop, pmo.watertop)
-	
-	if pmo.z > d.z+d.height
-	or d.z > pmo.z+pmo.height
-	or pmo ~= d.ntoppv2_driftmo
-	or wdist > 10*FU return false end
-	
-	pmo.player.charflags = $ & ~SF_RUNONWATER
-	pmo.momz = 0
-	pmo.player.ntoppv2_waterdrifting = true
-	P_RemoveMobj(d)
-	--return false
-end
-
-addHook("MobjCollide", collide, MT_PLAYER)
-addHook("MobjMoveCollide", collide, MT_PLAYER)
 
 addHook('PreThinkFrame', do
 	for player in players.iterate do

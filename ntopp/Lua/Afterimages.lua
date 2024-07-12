@@ -102,4 +102,6 @@ rawset(_G, "NTOPP_NoiseAI", function(mo, type)
 	g.frame = frame
 	g.tics = 7
 	g.color = (mo.player and mo.player.valid) and mo.player.skincolor or mo.color
+	g.eflags = mo.eflags
+	g.scale = mo.scale
 end)

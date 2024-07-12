@@ -211,6 +211,9 @@ local function draw_tv(v, p)
 	if p.pvars.tv.trans then
 		local frame = ((leveltime-p.pvars.tv.trans.starttime) % (5*2)) / 2
 		local patch = v.cachePatch("GLOB_WHNO_"..frame)
+		if p.mo.skin == "nthe_noise"
+			patch = v.cachePatch("GLOB_WHNO_"..frame+"N")
+		end
 
 		v.drawScaled(x,y,s, patch, V_SNAPTOTOP|V_SNAPTORIGHT)
 	end

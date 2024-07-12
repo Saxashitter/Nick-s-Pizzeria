@@ -191,7 +191,7 @@ addHook("MobjThinker", function(mo)
 	
 	if pmo.skin == "nthe_noise"
 	and not mo.bosshpoverlay
-		mo.bosshpoverlay = P_SpawnMobj(mo.x, mo.y, mo.z, MT_NOISE_OVERLAY)
+		mo.bosshpoverlay = P_SpawnMobj(mo.x, mo.y, mo.z, MT_OVERLAY)
 		local o = mo.bosshpoverlay
 		o.target = mo
 	elseif mo.bosshpoverlay and mo.bosshpoverlay.valid
@@ -199,7 +199,7 @@ addHook("MobjThinker", function(mo)
 		local o = mo.bosshpoverlay
 		local scframe = uf+abs(chp.sframe-chp.sclr.sframe)
 		
-		o.flags2 = mo.flags2
+		--o.flags2 = mo.flags2
 		o.eflags = (mo.eflags & ~MFE_FORCENOSUPER)|MFE_FORCESUPER
 		o.state = mo.state
 		o.sprite = mo.sprite
@@ -209,9 +209,9 @@ addHook("MobjThinker", function(mo)
 		o.dispoffset = mo.dispoffset+1
 		o.spriteyoffset = mo.spriteyoffset
 		
-		o.angle = p.drawangle
-		local zadd = (o.eflags & MFE_VERTICALFLIP) and mo.height or 0
-		P_MoveOrigin(o, mo.x, mo.y, mo.z+zadd)
+		o.angle = mo.angle
+		/*local zadd = (o.eflags & MFE_VERTICALFLIP) and mo.height or 0
+		P_MoveOrigin(o, mo.x, mo.y, mo.z+zadd)*/
 		
 		o.color = NoiseSkincolor[p.skincolor] or SKINCOLOR_FLESHEATER
 	end
